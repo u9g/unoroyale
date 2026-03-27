@@ -15,6 +15,7 @@ const showRules = ref(false)
 const choosingColor = ref(false)
 const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
+const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
 onMounted(() => {
@@ -26,6 +27,7 @@ function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
   localStorage.setItem('uno_player_name', name)
   isNewGame.value = true
+  gameKey.value++
   controller.startGame(name)
 }
 
@@ -58,6 +60,7 @@ function newGameRestart() {
   choosingColor.value = false
   pendingWildIndex = null
   isNewGame.value = true
+  gameKey.value++
   controller.restartGame()
 }
 
@@ -144,7 +147,7 @@ function renderMarkdown(md: string): string {
     <!-- Playing -->
     <template v-else-if="controller.phase.value === 'playing' && controller.gameState.value">
       <GameBoard
-        :key="controller.gameState.value.drawPile.length + '-' + controller.gameState.value.players[0].name"
+        :key="gameKey"
         :game-state="controller.gameState.value"
         :choosing-color="choosingColor"
         :is-new-game="isNewGame"
