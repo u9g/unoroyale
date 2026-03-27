@@ -32,32 +32,24 @@ if [ "$(cat "$tmpdir/eslint.exit")" != "0" ]; then
   echo "ESLint failed!"
   cat "$tmpdir/eslint.log"
   failed=1
-else
-  echo "ESLint passed."
 fi
 
 if [ "$(cat "$tmpdir/stylelint.exit")" != "0" ]; then
   echo "CSS lint failed!"
   cat "$tmpdir/stylelint.log"
   failed=1
-else
-  echo "CSS lint passed."
 fi
 
 if [ "$(cat "$tmpdir/vitest.exit")" != "0" ]; then
   echo "Engine tests failed!"
   cat "$tmpdir/vitest.log"
   failed=1
-else
-  echo "All engine tests passed."
 fi
 
 if [ "$(cat "$tmpdir/shellcheck.exit")" != "0" ]; then
   echo "ShellCheck failed!"
   cat "$tmpdir/shellcheck.log"
   failed=1
-else
-  echo "ShellCheck passed."
 fi
 
 if [ "$(cat "$tmpdir/screenshots.exit")" != "0" ]; then
@@ -66,7 +58,6 @@ if [ "$(cat "$tmpdir/screenshots.exit")" != "0" ]; then
   failed=1
 else
   git add screenshots/
-  echo "Screenshots generated and staged."
 fi
 
 rm -rf "$tmpdir"
