@@ -585,6 +585,16 @@ body {
   align-items: flex-end;
 }
 
+.recent-plays__label {
+  position: absolute;
+  top: -1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
 .recent-play {
   display: flex;
   flex-direction: column;

@@ -714,8 +714,8 @@ function onDrop(e: DragEvent) {
     <div class="center-area">
       <div class="center-area__piles">
         <div v-if="gameState.recentPlays.length > 0" class="recent-plays">
-          <div v-for="([name, card], i) in [...gameState.recentPlays].reverse()" :key="i" class="recent-play">
-            <span class="recent-play__name">{{ name }}</span>
+          <div class="recent-plays__label">Card Play History</div>
+          <div v-for="([, card], i) in [...gameState.recentPlays].reverse()" :key="i" class="recent-play">
             <CardFace :card="card" :index="-1" :playable="false" :disabled="false" :draggable="false" style="--card-index: 0; --card-total: 1;" />
           </div>
         </div>
