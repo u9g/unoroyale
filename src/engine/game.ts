@@ -6,17 +6,39 @@ import { handSize, removeCardAt, addCards } from './player'
 import type { GameState } from './gameState'
 import { topCard, updatePlayer, nextPlayerIndex, recordPlay, advanceTurn } from './gameState'
 import { playable } from './rules'
+import namesCsv from '../names.csv?raw'
 
 const HAND_SIZE = 7
+
+const ALL_NAMES: string[] = namesCsv
+  .trim()
+  .split('\n')
+  .slice(1)
+  .flatMap(line => {
+    const [, girl, boy] = line.split(',')
+    return [girl?.trim(), boy?.trim()].filter((n): n is string => !!n)
+  })
+
+function pickRandomNames(exclude: string, count: number): string[] {
+  const available = ALL_NAMES.filter(n => n.toLowerCase() !== exclude.toLowerCase())
+  const picked: string[] = []
+  for (let i = 0; i < count; i++) {
+    const idx = Math.floor(Math.random() * available.length)
+    picked.push(available[idx])
+    available.splice(idx, 1)
+  }
+  return picked
+}
 
 export function newGame(playerName: string): GameState {
   let deck = Deck.shuffle(Deck.newDeck())
 
+  const aiNames = pickRandomNames(playerName, 3)
   const players: Player[] = [
     { id: 0, name: playerName, type: 'human', hand: [], saidUno: false },
-    { id: 1, name: 'CPU West', type: 'ai', hand: [], saidUno: false },
-    { id: 2, name: 'CPU North', type: 'ai', hand: [], saidUno: false },
-    { id: 3, name: 'CPU East', type: 'ai', hand: [], saidUno: false },
+    { id: 1, name: aiNames[0], type: 'ai', hand: [], saidUno: false },
+    { id: 2, name: aiNames[1], type: 'ai', hand: [], saidUno: false },
+    { id: 3, name: aiNames[2], type: 'ai', hand: [], saidUno: false },
   ]
 
   // Deal hands

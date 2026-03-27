@@ -14,6 +14,14 @@ describe('newGame', () => {
     expect(state.players.slice(1).every(p => p.type === 'ai')).toBe(true)
   })
 
+  it('gives AI players random names from the name list', () => {
+    const state = newGame('Alice')
+    const aiNames = state.players.slice(1).map(p => p.name)
+    expect(aiNames.every(n => n !== 'Alice')).toBe(true)
+    expect(new Set(aiNames).size).toBe(3)
+    expect(aiNames.every(n => typeof n === 'string' && n.length > 0)).toBe(true)
+  })
+
   it('deals 7 cards to each player, plus 2 extra if opening card is draw_two', () => {
     const state = newGame('Alice')
     const top = topCard(state)!
