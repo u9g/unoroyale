@@ -15,40 +15,54 @@ if [ -n "$engine_changes" ] && [ -z "$test_changes" ]; then
   exit 1
 fi
 
-# Lint Vue + TypeScript
-echo "Linting Vue + TypeScript..."
-npx eslint src/ 2>&1
-if [ $? -ne 0 ]; then
-  echo "ESLint failed! Commit aborted."
-  exit 1
-fi
-echo "ESLint passed."
+# Run all checks in parallel
+tmpdir=$(mktemp -d)
 
-# Lint CSS
-echo "Linting CSS..."
-npx stylelint "src/**/*.css" 2>&1
-if [ $? -ne 0 ]; then
-  echo "CSS lint failed! Commit aborted."
-  exit 1
-fi
-echo "CSS lint passed."
+(npx eslint src/ >"$tmpdir/eslint.log" 2>&1; echo $? >"$tmpdir/eslint.exit") &
+(npx stylelint "src/**/*.css" >"$tmpdir/stylelint.log" 2>&1; echo $? >"$tmpdir/stylelint.exit") &
+(npx vitest run >"$tmpdir/vitest.log" 2>&1; echo $? >"$tmpdir/vitest.exit") &
+(node scripts/take-screenshots.mjs >"$tmpdir/screenshots.log" 2>&1; echo $? >"$tmpdir/screenshots.exit") &
 
-# Run engine tests
-echo "Running UNO engine tests..."
-npx vitest run 2>&1
-exit_code=$?
-if [ $exit_code -ne 0 ]; then
-  echo "Engine tests failed! Commit aborted."
-  exit 1
-fi
-echo "All engine tests passed."
+wait
 
-# Generate screenshots
-echo "Generating screenshots..."
-node scripts/take-screenshots.mjs 2>&1
-if [ $? -ne 0 ]; then
-  echo "Screenshot generation failed! Commit aborted."
+failed=0
+
+if [ "$(cat "$tmpdir/eslint.exit")" != "0" ]; then
+  echo "ESLint failed!"
+  cat "$tmpdir/eslint.log"
+  failed=1
+else
+  echo "ESLint passed."
+fi
+
+if [ "$(cat "$tmpdir/stylelint.exit")" != "0" ]; then
+  echo "CSS lint failed!"
+  cat "$tmpdir/stylelint.log"
+  failed=1
+else
+  echo "CSS lint passed."
+fi
+
+if [ "$(cat "$tmpdir/vitest.exit")" != "0" ]; then
+  echo "Engine tests failed!"
+  cat "$tmpdir/vitest.log"
+  failed=1
+else
+  echo "All engine tests passed."
+fi
+
+if [ "$(cat "$tmpdir/screenshots.exit")" != "0" ]; then
+  echo "Screenshot generation failed!"
+  cat "$tmpdir/screenshots.log"
+  failed=1
+else
+  git add screenshots/
+  echo "Screenshots generated and staged."
+fi
+
+rm -rf "$tmpdir"
+
+if [ "$failed" != "0" ]; then
+  echo "Pre-commit checks failed! Commit aborted."
   exit 1
 fi
-git add screenshots/
-echo "Screenshots generated and staged."
