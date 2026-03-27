@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watch, nextTick, onMounted } from 'vue'
+import { computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Color } from '../engine/card'
 import type { GameState } from '../engine/gameState'
 import { topCard, nextPlayerIndex } from '../engine/gameState'
@@ -72,6 +72,10 @@ onMounted(() => {
     })
   }
 })
+
+const onResize = () => updateArrow(false)
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 // Watch for state changes to animate arrow + discard
 watch(() => [props.gameState.currentPlayer, props.gameState.direction], () => {
