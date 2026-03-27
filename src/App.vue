@@ -38,10 +38,16 @@ function startGame() {
 
 function handlePlayCard(index: number) {
   if (!controller.gameState.value) return
-  const card = controller.gameState.value.players[0].hand[index]
+  const hand = controller.gameState.value.players[0].hand
+  const card = hand[index]
   if (isWild(card)) {
-    pendingWildIndex = index
-    choosingColor.value = true
+    if (hand.length === 1) {
+      const colors: Color[] = ['red', 'blue', 'green', 'yellow']
+      controller.playCard(index, colors[Math.floor(Math.random() * colors.length)])
+    } else {
+      pendingWildIndex = index
+      choosingColor.value = true
+    }
   } else {
     controller.playCard(index)
   }
