@@ -72,7 +72,6 @@ body {
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
   background: linear-gradient(135deg, #ef4444 25%, #3b82f6 25%, #3b82f6 50%, #22c55e 50%, #22c55e 75%, #eab308 75%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
