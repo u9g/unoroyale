@@ -10,11 +10,13 @@
     "lint:css": "stylelint \"src/**/*.css\"",
     "lint": "eslint src/ && stylelint \"src/**/*.css\"",
     "cap:sync": "npm run build && npx cap sync ios",
+    "cap:sync:android": "npm run build && npx cap sync android",
     "cap:open": "npx cap open ios",
     "screenshots": "node scripts/take-screenshots.mjs",
     "deploy": "sh scripts/deploy-ios.sh"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.0",
     "@capacitor/core": "^8.3.0",
     "@capacitor/ios": "^8.3.0",
     "vue": "^3.5.30"

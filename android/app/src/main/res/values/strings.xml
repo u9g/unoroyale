@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Uno Royale</string>
+    <string name="title_activity_main">Uno Royale</string>
+    <string name="package_name">dev.u9g.unoroyale</string>
+    <string name="custom_url_scheme">dev.u9g.unoroyale</string>
+</resources>
