@@ -15,6 +15,15 @@ if [ -n "$engine_changes" ] && [ -z "$test_changes" ]; then
   exit 1
 fi
 
+# Lint CSS
+echo "Linting CSS..."
+npx stylelint "src/**/*.css" 2>&1
+if [ $? -ne 0 ]; then
+  echo "CSS lint failed! Commit aborted."
+  exit 1
+fi
+echo "CSS lint passed."
+
 # Run engine tests
 echo "Running UNO engine tests..."
 npx vitest run 2>&1
