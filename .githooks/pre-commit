@@ -21,6 +21,7 @@ tmpdir=$(mktemp -d)
 (npx eslint src/ >"$tmpdir/eslint.log" 2>&1; echo $? >"$tmpdir/eslint.exit") &
 (npx stylelint "src/**/*.css" >"$tmpdir/stylelint.log" 2>&1; echo $? >"$tmpdir/stylelint.exit") &
 (npx vitest run >"$tmpdir/vitest.log" 2>&1; echo $? >"$tmpdir/vitest.exit") &
+(shellcheck scripts/*.sh .githooks/pre-commit >"$tmpdir/shellcheck.log" 2>&1; echo $? >"$tmpdir/shellcheck.exit") &
 (node scripts/take-screenshots.mjs >"$tmpdir/screenshots.log" 2>&1; echo $? >"$tmpdir/screenshots.exit") &
 
 wait
@@ -49,6 +50,14 @@ if [ "$(cat "$tmpdir/vitest.exit")" != "0" ]; then
   failed=1
 else
   echo "All engine tests passed."
+fi
+
+if [ "$(cat "$tmpdir/shellcheck.exit")" != "0" ]; then
+  echo "ShellCheck failed!"
+  cat "$tmpdir/shellcheck.log"
+  failed=1
+else
+  echo "ShellCheck passed."
 fi
 
 if [ "$(cat "$tmpdir/screenshots.exit")" != "0" ]; then
