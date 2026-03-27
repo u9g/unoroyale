@@ -113,13 +113,13 @@ function calcArrowPositions(): ArrowPositions | null {
   if (!start || !end) return null
 
   let cpX: number, cpY: number
+  const edgePad = isMobile ? 8 : 12
   if (start._humanArc || end._humanArc) {
     const arcRight = start._arcRight || end._arcRight
-    const piles = table.querySelector('.center-area__piles')
-    const pr = piles ? piles.getBoundingClientRect() : null
+    cpX = arcRight ? tableRect.width - edgePad : edgePad
+    const humanY = from === 0 ? start.y : end.y
     const midY = (start.y + end.y) / 2
-    cpX = pr ? (arcRight ? pr.right - tableRect.left + gap + 30 : pr.left - tableRect.left - gap - 30) : (arcRight ? tableRect.width - 20 : 20)
-    cpY = midY
+    cpY = humanY * 0.85 + midY * 0.15
   } else if (start._sameRow) {
     const midX = (start.x + end.x) / 2
     const spread = Math.abs(end.x - start.x)
