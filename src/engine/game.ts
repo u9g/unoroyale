@@ -205,8 +205,11 @@ function doPlayCard(
       }
     }
   } else {
-    // Reset saidUno after playing
-    s = updatePlayer(s, playerIndex, p => ({ ...p, saidUno: false }))
+    // Reset saidUno only when hand has more than 1 card remaining —
+    // keep the flag when exactly 1 card so the winning play succeeds
+    if (currentHand > 1) {
+      s = updatePlayer(s, playerIndex, p => ({ ...p, saidUno: false }))
+    }
     s = applyCardEffect(s, playedCard, playerIndex)
     return { ok: true, state: s }
   }

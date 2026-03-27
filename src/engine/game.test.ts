@@ -333,6 +333,45 @@ describe('UNO penalty', () => {
   })
 })
 
+describe('AI win', () => {
+  it('AI wins after calling UNO with 2 cards then playing last card next turn', () => {
+    let state = newGame('Test')
+    const card1: Card = { color: 'red', value: 3 }
+    const card2: Card = { color: 'red', value: 5 }
+    state = {
+      ...state,
+      discardPile: [{ color: 'red', value: 1 }],
+      currentPlayer: 1,
+    }
+    // AI player 1 has 2 cards
+    state = updatePlayer(state, 1, p => ({ ...p, hand: [card1, card2] }))
+
+    // AI calls UNO
+    const unoResult = sayUno(state, 1)
+    expect(unoResult.ok).toBe(true)
+    state = unoResult.state
+    expect(state.players[1].saidUno).toBe(true)
+
+    // AI plays first card (2 → 1 cards) — saidUno should persist
+    const play1 = playCard(state, 1, 0)
+    expect(play1.ok).toBe(true)
+    if (!play1.ok) return
+    state = play1.state
+    expect(handSize(state.players[1])).toBe(1)
+    expect(state.players[1].saidUno).toBe(true)
+
+    // Set it back to AI's turn with a matching discard
+    state = { ...state, currentPlayer: 1, discardPile: [{ color: 'red', value: 7 }] }
+
+    // AI plays last card (1 → 0 cards) — should win
+    const play2 = playCard(state, 1, 0)
+    expect(play2.ok).toBe(true)
+    if (!play2.ok) return
+    expect(play2.state.phase).toBe('game_over')
+    expect(play2.state.winner).toBe(1)
+  })
+})
+
 describe('pass', () => {
   it('advances turn', () => {
     let state = newGame('Test')
