@@ -818,6 +818,36 @@ body {
 .pause-menu__btn--feedback:hover { background: rgba(255,255,255,0.25); }
 .pause-menu__btn--rules { background: rgba(255,255,255,0.15); }
 .pause-menu__btn--rules:hover { background: rgba(255,255,255,0.25); }
+.pause-menu__toggle {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0.6rem 2rem; border-radius: 8px;
+  background: rgba(255,255,255,0.1); color: #fff;
+  font-size: 1rem; font-weight: 700; cursor: pointer;
+  width: 100%; box-sizing: border-box;
+  transition: background 0.15s;
+}
+.pause-menu__toggle:hover { background: rgba(255,255,255,0.2); }
+.pause-menu__toggle input { display: none; }
+.pause-menu__toggle .toggle-check {
+  width: 22px; height: 22px; border-radius: 5px;
+  border: 2px solid rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.15s, border-color 0.15s;
+}
+.pause-menu__toggle .toggle-check::after {
+  content: ""; display: block;
+  width: 6px; height: 12px;
+  border: solid #fff; border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+  opacity: 0; transition: opacity 0.15s;
+}
+.pause-menu__toggle input:checked + .toggle-check {
+  background: #3b82f6; border-color: #3b82f6;
+}
+.pause-menu__toggle input:checked + .toggle-check::after {
+  opacity: 1;
+}
 .pause-menu__btn--new-game { background: #ef4444; }
 .pause-menu__btn--new-game:hover { background: #dc2626; }
 
@@ -1003,7 +1033,7 @@ body {
 
   /* Top bar */
   .top-bar {
-    padding: 0.35rem 0.75rem;
+    display: none;
   }
 
   .top-bar__title {
