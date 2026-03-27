@@ -223,6 +223,9 @@ function updateArrow(animate: boolean) {
 
 // --- Discard Fly Animation ---
 
+let lastPlayedCardRect: DOMRect | null = null
+let lastPlayedCardTime: number | null = null
+let lastDrawTime: number | null = null
 let prevDiscardKey: string | null = null
 
 function discardKey(el: HTMLElement): string {
@@ -236,9 +239,9 @@ function findDiscardSource(targetEl: HTMLElement): DOMRect | null {
   const lastPlayer = parseInt(targetEl.dataset.lastPlayer || '-1', 10)
 
   if (lastPlayer === 0) {
-    const age = Date.now() - ((window as any)._lastPlayedCardTime || 0)
-    if ((window as any)._lastPlayedCardRect && age < 2000) {
-      return (window as any)._lastPlayedCardRect
+    const age = Date.now() - (lastPlayedCardTime || 0)
+    if (lastPlayedCardRect && age < 2000) {
+      return lastPlayedCardRect
     }
     return null
   }
@@ -280,8 +283,8 @@ function updateDiscardAnimation(animate: boolean) {
   const discardEl = document.getElementById('discard-top')
   if (!discardEl) {
     prevDiscardKey = null
-    ;(window as any)._lastPlayedCardRect = null
-    ;(window as any)._lastPlayedCardTime = null
+    lastPlayedCardRect = null
+    lastPlayedCardTime = null
     return
   }
 
@@ -289,8 +292,8 @@ function updateDiscardAnimation(animate: boolean) {
   if (!animate || !prevDiscardKey) {
     prevDiscardKey = nextKey
     if (!animate) {
-      ;(window as any)._lastPlayedCardRect = null
-      ;(window as any)._lastPlayedCardTime = null
+      lastPlayedCardRect = null
+      lastPlayedCardTime = null
     }
     return
   }
@@ -303,8 +306,8 @@ function updateDiscardAnimation(animate: boolean) {
   }
 
   prevDiscardKey = nextKey
-  ;(window as any)._lastPlayedCardRect = null
-  ;(window as any)._lastPlayedCardTime = null
+  lastPlayedCardRect = null
+  lastPlayedCardTime = null
 }
 
 // --- Draw Animation (card flies from draw pile to hand with 3D flip) ---
@@ -313,11 +316,11 @@ function updateDrawAnimation(animate: boolean) {
   const targetCard = document.querySelector('#human-hand-cards [data-card-index]:last-child') as HTMLElement | null
   const drawPile = document.querySelector('.draw-pile .card') as HTMLElement | null
 
-  if (!animate || !targetCard || !drawPile || !(window as any)._lastDrawTime) return
+  if (!animate || !targetCard || !drawPile || !lastDrawTime) return
 
-  const age = Date.now() - ((window as any)._lastDrawTime || 0)
+  const age = Date.now() - (lastDrawTime || 0)
   if (age > 2000) {
-    ;(window as any)._lastDrawTime = null
+    lastDrawTime = null
     return
   }
 
@@ -373,7 +376,7 @@ function updateDrawAnimation(animate: boolean) {
     targetCard.style.opacity = ''
   }, 750)
 
-  ;(window as any)._lastDrawTime = null
+  lastDrawTime = null
 }
 
 // --- Deal Animation ---
@@ -449,12 +452,12 @@ function animateDeal(onComplete?: () => void) {
 // --- Capture helpers ---
 
 function capturePlayedCard(cardEl: HTMLElement) {
-  ;(window as any)._lastPlayedCardRect = cardEl.getBoundingClientRect()
-  ;(window as any)._lastPlayedCardTime = Date.now()
+  lastPlayedCardRect = cardEl.getBoundingClientRect()
+  lastPlayedCardTime = Date.now()
 }
 
 function captureDrawPile() {
-  ;(window as any)._lastDrawTime = Date.now()
+  lastDrawTime = Date.now()
 }
 
 const props = defineProps<{
