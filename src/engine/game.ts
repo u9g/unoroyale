@@ -62,6 +62,7 @@ export function newGame(playerName: string): GameState {
     phase: 'playing',
     winner: null,
     lastAction: `Game started! ${cardToString(firstCard)} on the pile.`,
+    unoPenalty: false,
     recentPlays: [],
   }
 
@@ -186,13 +187,15 @@ function doPlayCard(
   // Check win — but if player didn't call UNO, penalize instead
   const currentHand = handSize(s.players[playerIndex])
 
+  s = { ...s, unoPenalty: false }
+
   if (currentHand === 0) {
     if (!player.saidUno) {
       // Penalty: draw 2, no win
       s = unoPenalty(s, playerIndex)
       const penaltyAction = s.lastAction
       s = applyCardEffect(s, playedCard, playerIndex)
-      s = { ...s, lastAction: `${penaltyAction} ${s.lastAction}` }
+      s = { ...s, unoPenalty: playerIndex === 0, lastAction: `${penaltyAction} ${s.lastAction}` }
       return { ok: true, state: s }
     } else {
       return {

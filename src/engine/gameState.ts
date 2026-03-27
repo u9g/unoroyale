@@ -13,6 +13,7 @@ export interface GameState {
   phase: Phase
   winner: number | null
   lastAction: string | null
+  unoPenalty: boolean
   recentPlays: [string, Card][]
 }
 
