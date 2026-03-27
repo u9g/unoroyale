@@ -161,6 +161,26 @@ describe('playCard', () => {
     if (result.ok) expect(result.state.direction).toBe('clockwise')
   })
 
+  it('reverse stamps reverseTo on discard pile and recent plays', () => {
+    let state = newGame('Test')
+    const rev: Card = { color: 'red', value: 'reverse' }
+    state = {
+      ...state,
+      discardPile: [{ color: 'red', value: 1 }],
+      currentPlayer: 0,
+      direction: 'counter_clockwise',
+    }
+    state = updatePlayer(state, 0, p => ({ ...p, hand: [rev, ...p.hand] }))
+
+    const result = playCard(state, 0, 0)
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.state.discardPile[0].reverseTo).toBe('clockwise')
+      const recentCard = result.state.recentPlays[0][1]
+      expect(recentCard.reverseTo).toBe('clockwise')
+    }
+  })
+
   it('draw_two auto-deals 2 cards to next player', () => {
     let state = newGame('Test')
     const d2: Card = { color: 'red', value: 'draw_two' }

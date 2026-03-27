@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Card, Color } from '../engine/card'
+import type { Direction } from '../engine/gameState'
 import { displayColor, displayValue, isWild } from '../engine/card'
 
 const props = defineProps<{
@@ -8,6 +9,7 @@ const props = defineProps<{
   playable?: boolean
   disabled?: boolean
   draggable?: boolean
+  direction?: Direction
 }>()
 
 const emit = defineEmits<{
@@ -21,6 +23,15 @@ function colorClass(color: Color | null, wild: boolean): string {
   if (color === 'yellow') return 'card--yellow'
   if (wild) return 'card--wild'
   return 'card--wild'
+}
+
+function reverseIconClockwise(): boolean {
+  // If card was already played, use the stamped direction
+  if (props.card.reverseTo) return props.card.reverseTo === 'clockwise'
+  // Card in hand: will flip to opposite of current direction
+  if (props.direction) return props.direction === 'counter_clockwise'
+  // Fallback
+  return false
 }
 
 function handleClick() {
@@ -43,7 +54,10 @@ function handleClick() {
     @click="handleClick"
   >
     <span class="card__corner card__corner--top">{{ displayValue(card) }}</span>
-    <span class="card__center">{{ displayValue(card) }}</span>
+    <span v-if="card.value === 'reverse'" class="card__center card__center--reverse">
+      {{ reverseIconClockwise() ? '↻' : '↺' }}
+    </span>
+    <span v-else class="card__center">{{ displayValue(card) }}</span>
     <span class="card__corner card__corner--bottom">{{ displayValue(card) }}</span>
     <div class="card__oval"></div>
     <span v-if="card.drawn" class="card__drawn-star">&#9733;</span>

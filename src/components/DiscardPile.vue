@@ -26,7 +26,10 @@ function colorClass(color: Color | null, wild: boolean): string {
     :data-last-player="lastPlayer ?? -1"
   >
     <span class="card__corner card__corner--top">{{ displayValue(card) }}</span>
-    <span class="card__center card__center--large">{{ displayValue(card) }}</span>
+    <span v-if="card.value === 'reverse'" class="card__center card__center--large card__center--reverse">
+      {{ card.reverseTo === 'clockwise' ? '↻' : '↺' }}
+    </span>
+    <span v-else class="card__center card__center--large">{{ displayValue(card) }}</span>
     <span class="card__corner card__corner--bottom">{{ displayValue(card) }}</span>
     <div class="card__oval"></div>
   </div>

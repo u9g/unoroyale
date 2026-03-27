@@ -139,6 +139,7 @@ function applyOpeningCard(state: GameState, card: Card): GameState {
     case 'reverse':
       return advanceTurn({
         ...state,
+        discardPile: [{ ...state.discardPile[0], reverseTo: 'clockwise' }, ...state.discardPile.slice(1)],
         direction: 'clockwise',
         lastAction: `${cardToString(card)} - Reversed! Playing clockwise.`,
       })
@@ -228,8 +229,14 @@ function applyCardEffect(state: GameState, card: Card, playerIndex: number): Gam
 
     case 'reverse': {
       const newDir = state.direction === 'clockwise' ? 'counter_clockwise' : 'clockwise'
-      return advanceTurn({
+      // Stamp the played card with the direction it changed to
+      const stamped: GameState = {
         ...state,
+        discardPile: [{ ...state.discardPile[0], reverseTo: newDir }, ...state.discardPile.slice(1)],
+        recentPlays: state.recentPlays.map((entry, i) => i === 0 ? [entry[0], { ...entry[1], reverseTo: newDir }] as [string, Card] : entry),
+      }
+      return advanceTurn({
+        ...stamped,
         direction: newDir,
         lastAction: `${player.name} played ${cardToString(card)} - Reversed!`,
       })

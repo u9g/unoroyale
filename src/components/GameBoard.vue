@@ -770,6 +770,7 @@ function onDrop(e: DragEvent) {
             :index="idx"
             :playable="playableIdxs.includes(idx)"
             :draggable="true"
+            :direction="gameState.direction"
             :style="`--card-index: ${idx}; --card-total: ${human.hand.length};`"
             @play="onPlayCard"
           />

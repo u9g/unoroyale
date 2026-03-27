@@ -13,6 +13,7 @@ export interface Card {
   value: Value
   chosenColor?: Color | null
   drawn?: boolean
+  reverseTo?: 'clockwise' | 'counter_clockwise'
 }
 
 export function isWild(card: Card): boolean {
