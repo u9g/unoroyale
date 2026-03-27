@@ -312,19 +312,7 @@ function updateDiscardAnimation(animate: boolean) {
 
 // --- Draw Animation (card flies from draw pile to hand with 3D flip) ---
 
-function updateDrawAnimation(animate: boolean) {
-  const targetCard = document.querySelector('#human-hand-cards [data-card-index]:last-child') as HTMLElement | null
-  const drawPile = document.querySelector('.draw-pile .card') as HTMLElement | null
-
-  if (!animate || !targetCard || !drawPile || !lastDrawTime) return
-
-  const age = Date.now() - (lastDrawTime || 0)
-  if (age > 2000) {
-    lastDrawTime = null
-    return
-  }
-
-  const srcRect = drawPile.getBoundingClientRect()
+function animateOneDrawnCard(targetCard: HTMLElement, srcRect: DOMRect, staggerDelay: number) {
   const destRect = targetCard.getBoundingClientRect()
 
   targetCard.style.visibility = 'hidden'
@@ -359,22 +347,46 @@ function updateDrawAnimation(animate: boolean) {
   flipper.appendChild(inner)
   document.body.appendChild(flipper)
 
-  requestAnimationFrame(() => {
-    flipper.style.left = destRect.left + 'px'
-    flipper.style.top = destRect.top + 'px'
-    flipper.style.width = destRect.width + 'px'
-    flipper.style.height = destRect.height + 'px'
+  setTimeout(() => {
+    requestAnimationFrame(() => {
+      flipper.style.left = destRect.left + 'px'
+      flipper.style.top = destRect.top + 'px'
+      flipper.style.width = destRect.width + 'px'
+      flipper.style.height = destRect.height + 'px'
+    })
+
+    setTimeout(() => {
+      inner.style.transform = 'rotateY(180deg)'
+    }, 400)
+
+    setTimeout(() => {
+      flipper.remove()
+      targetCard.style.visibility = ''
+      targetCard.style.opacity = ''
+    }, 750)
+  }, staggerDelay)
+}
+
+function updateDrawAnimation(animate: boolean, cardCount: number = 1) {
+  const drawPile = document.querySelector('.draw-pile .card') as HTMLElement | null
+
+  if (!animate || !drawPile || !lastDrawTime) return
+
+  const age = Date.now() - (lastDrawTime || 0)
+  if (age > 2000) {
+    lastDrawTime = null
+    return
+  }
+
+  const allCards = Array.from(document.querySelectorAll('#human-hand-cards [data-card-index]')) as HTMLElement[]
+  const newCards = allCards.slice(-cardCount)
+  if (newCards.length === 0) { lastDrawTime = null; return }
+
+  const srcRect = drawPile.getBoundingClientRect()
+
+  newCards.forEach((card, i) => {
+    animateOneDrawnCard(card, srcRect, i * 200)
   })
-
-  setTimeout(() => {
-    inner.style.transform = 'rotateY(180deg)'
-  }, 400)
-
-  setTimeout(() => {
-    flipper.remove()
-    targetCard.style.visibility = ''
-    targetCard.style.opacity = ''
-  }, 750)
 
   lastDrawTime = null
 }
@@ -541,8 +553,12 @@ watch(() => props.gameState.discardPile[0], () => {
 })
 
 watch(() => props.gameState.players[0]?.hand.length, (newLen, oldLen) => {
-  if (!dealing && oldLen !== undefined && newLen > oldLen) {
-    nextTick(() => updateDrawAnimation(true))
+  if (!dealing && oldLen !== undefined && newLen! > oldLen) {
+    const added = newLen! - oldLen
+    // Ensure lastDrawTime is set so the animation plays even for
+    // cards added by opponent effects (e.g. +2) rather than manual draws
+    if (!lastDrawTime) lastDrawTime = Date.now()
+    nextTick(() => updateDrawAnimation(true, added))
   }
 })
 
