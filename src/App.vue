@@ -74,10 +74,13 @@ function winnerName(): string {
   return gs.players[gs.winner].name
 }
 
-// Watch for UNO penalty (player went to 0 cards without calling UNO, got penalized back to 2)
+// Watch for UNO penalty (human player went to 0 cards without calling UNO, got penalized back to 2)
 watch(() => controller.gameState.value?.lastAction, (action) => {
   if (action && action.includes('forgot to call UNO')) {
-    showUnoPenalty.value = true
+    const humanName = controller.gameState.value?.players[0]?.name
+    if (humanName && action.startsWith(humanName)) {
+      showUnoPenalty.value = true
+    }
   }
 })
 
