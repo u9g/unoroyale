@@ -187,6 +187,11 @@ function renderMarkdown(md: string): string {
       <div class="pause-menu" @click.stop>
         <h2 class="pause-menu__title">{{ controller.phase.value === 'lobby' ? 'Menu' : 'Paused' }}</h2>
         <button v-if="controller.phase.value !== 'lobby'" class="pause-menu__btn pause-menu__btn--resume" @click="showMenu = false">Resume</button>
+        <label v-if="controller.phase.value !== 'lobby'" class="pause-menu__toggle">
+          <input type="checkbox" :checked="controller.instantCpu.value" @change="controller.setInstantCpu(($event.target as HTMLInputElement).checked)">
+          <span class="toggle-check"></span>
+          <span>Make CPU players instant</span>
+        </label>
         <button class="pause-menu__btn pause-menu__btn--rules" @click="showMenu = false; showRules = true">Game Info</button>
         <a class="pause-menu__btn pause-menu__btn--feedback" href="mailto:uno@u9g.dev?subject=I%20have%20advice">Give Feedback</a>
         <button v-if="controller.phase.value !== 'lobby'" class="pause-menu__btn pause-menu__btn--new-game" @click="newGameRestart">New Game</button>

@@ -15,6 +15,7 @@ export function useGameController() {
   const gameState = ref<GameState | null>(null)
   const phase = ref<'lobby' | 'playing' | 'game_over'>('lobby')
   const playerName = ref('')
+  const instantCpu = ref(localStorage.getItem('uno_instant_cpu') === 'true')
   let aiTimer: ReturnType<typeof setTimeout> | null = null
 
   function startGame(name: string) {
@@ -96,7 +97,7 @@ export function useGameController() {
     if (state.phase === 'playing') {
       const player = state.players[state.currentPlayer]
       if (player.type === 'ai') {
-        const delay = AI_DELAY_MIN + Math.floor(Math.random() * (AI_DELAY_MAX - AI_DELAY_MIN))
+        const delay = instantCpu.value ? 0 : AI_DELAY_MIN + Math.floor(Math.random() * (AI_DELAY_MAX - AI_DELAY_MIN))
         aiTimer = setTimeout(() => executeAiTurn(), delay)
       }
     }
@@ -178,5 +179,10 @@ export function useGameController() {
     drawCard: drawCardAction,
     sayUno: sayUnoAction,
     reorderHand,
+    instantCpu,
+    setInstantCpu(enabled: boolean) {
+      instantCpu.value = enabled
+      localStorage.setItem('uno_instant_cpu', String(enabled))
+    },
   }
 }
