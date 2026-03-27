@@ -35,4 +35,8 @@ APP_PATH=$(xcodebuild -project ios/App/App.xcodeproj -scheme App -showBuildSetti
 
 xcrun devicectl device install app --device "$DEVICE_ID" "$APP_PATH/App.app"
 
-echo "Deployed to $DEVICE_NAME."
+# Launch the app on device
+echo "Launching app on $DEVICE_NAME..."
+xcrun devicectl device process launch --device "$DEVICE_ID" dev.u9g.unoroyale
+
+echo "Deployed and launched on $DEVICE_NAME."

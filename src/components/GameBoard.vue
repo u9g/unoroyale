@@ -30,8 +30,9 @@ function calcArrowPositions(): ArrowPositions | null {
   if (!table) return null
 
   const tableRect = table.getBoundingClientRect()
-  const isCompact = window.innerWidth <= 1100
-  const isPhone = window.innerWidth <= 640
+  const isLandscapePhone = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches
+  const isCompact = window.innerWidth <= 1100 && !isLandscapePhone
+  const isPhone = window.innerWidth <= 640 || isLandscapePhone
   const gap = isPhone ? 20 : 35
 
   const getPlayerCards = (idx: number): HTMLElement | null => {
@@ -156,7 +157,8 @@ function applyArrowPositions(p: ArrowPositions) {
   const head = document.getElementById('arrow-head')
   if (!line) return
 
-  const isPhone = window.innerWidth <= 640
+  const isLandscapePhone = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches
+  const isPhone = window.innerWidth <= 640 || isLandscapePhone
   const hl = isPhone ? 28 : 48
   const dx = p.ex - p.cpX
   const dy = p.ey - p.cpY
