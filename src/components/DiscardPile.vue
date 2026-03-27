@@ -4,6 +4,7 @@ import { displayColor, displayValue, isWild } from '../engine/card'
 
 const props = defineProps<{
   card: Card
+  lastPlayer?: number
 }>()
 
 function colorClass(color: Color | null, wild: boolean): string {
@@ -17,7 +18,13 @@ function colorClass(color: Color | null, wild: boolean): string {
 </script>
 
 <template>
-  <div :class="['card', 'card--large', colorClass(displayColor(card), isWild(card))]">
+  <div
+    id="discard-top"
+    :class="['card', 'card--large', colorClass(displayColor(card), isWild(card))]"
+    :data-value="displayValue(card)"
+    :data-color="displayColor(card) || ''"
+    :data-last-player="lastPlayer ?? -1"
+  >
     <span class="card__corner card__corner--top">{{ displayValue(card) }}</span>
     <span class="card__center card__center--large">{{ displayValue(card) }}</span>
     <span class="card__corner card__corner--bottom">{{ displayValue(card) }}</span>

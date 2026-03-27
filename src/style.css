@@ -21,6 +21,8 @@
   --hover-lift: -20px;
   --ai-overlap-h: -25px;
   --ai-overlap-v: -45px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* Body */
@@ -35,10 +37,11 @@ html {
 }
 
 body {
-  background: #1a5c2a;
+  background: #144921;
   background-image:
     radial-gradient(ellipse at center, #1f6b32 0%, #144921 100%);
-  min-height: 100vh;
+  background-attachment: fixed;
+  min-height: 100dvh;
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   color: #fff;
   overflow: hidden;
@@ -46,9 +49,10 @@ body {
 
 /* Game Container */
 .game-container {
-  height: 100dvh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  padding: calc(var(--safe-top) + 0.35rem) 0 calc(var(--safe-bottom) + 0.35rem);
 }
 
 /* ---- Lobby ---- */
@@ -550,6 +554,20 @@ body {
   opacity: 0.7;
 }
 
+/* ---- Card Fan (inside draw pile) ---- */
+.draw-pile__cards {
+  display: flex;
+  align-items: center;
+}
+
+.draw-pile__cards > * + * {
+  margin-left: calc(var(--card-lg-w) * -0.6);
+}
+
+.card-fan__card {
+  transition: opacity 0.2s ease, margin 0.15s ease, transform 0.15s ease;
+}
+
 /* ---- Discard Area ---- */
 .discard-area {
   display: flex;
@@ -872,6 +890,63 @@ body {
 .rules-modal__body th, .rules-modal__body td { padding: 0.4rem 0.75rem; border: 1px solid rgba(255,255,255,0.15); text-align: left; }
 .rules-modal__body th { background: rgba(255,255,255,0.05); font-weight: 600; }
 .rules-modal__body strong { color: #fff; }
+
+/* ---- UNO Penalty Popup ---- */
+.uno-penalty-popup {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: fade-in 0.2s ease;
+}
+
+.uno-penalty-popup__card {
+  background: #1e293b;
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  max-width: 320px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+  animation: scale-in 0.2s ease;
+}
+
+.uno-penalty-popup__title {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ef4444;
+  text-transform: uppercase;
+}
+
+.uno-penalty-popup__text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.85);
+  margin: 0;
+}
+
+.uno-penalty-popup__btn {
+  padding: 0.6rem 2rem;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.uno-penalty-popup__btn:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.25);
+}
 
 /* ---- Disable hover lift on touch devices ---- */
 @media (hover: none) {

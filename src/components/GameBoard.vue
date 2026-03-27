@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch, nextTick, onMounted } from 'vue'
 import type { Color } from '../engine/card'
 import type { GameState } from '../engine/gameState'
 import { topCard, nextPlayerIndex } from '../engine/gameState'
 import { playableIndices } from '../engine/rules'
+import { updateArrow, updateDiscardAnimation, updateDrawAnimation, capturePlayedCard, captureDrawPile, animateDeal } from '../animations'
 import CardFace from './CardFace.vue'
 import AiHand from './AiHand.vue'
 import DiscardPile from './DiscardPile.vue'
@@ -12,6 +13,7 @@ import ColorChooser from './ColorChooser.vue'
 const props = defineProps<{
   gameState: GameState
   choosingColor: boolean
+  isNewGame?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -22,6 +24,7 @@ const emit = defineEmits<{
   chooseColor: [color: Color]
   cancelColor: []
   reorderHand: [from: number, to: number]
+  dealComplete: []
 }>()
 
 const human = computed(() => props.gameState.players[0])
@@ -35,13 +38,71 @@ const showUnoBtn = computed(() => props.gameState.phase === 'playing')
 const nextFromHuman = computed(() =>
   nextPlayerIndex({ ...props.gameState, currentPlayer: 0 })
 )
+const arrowFrom = computed(() => props.gameState.currentPlayer)
+const arrowTo = computed(() => nextPlayerIndex(props.gameState))
 
 const aiWest = computed(() => props.gameState.players[1])
 const aiNorth = computed(() => props.gameState.players[2])
 const aiEast = computed(() => props.gameState.players[3])
 
+const lastPlayerIndex = computed(() => {
+  const rp = props.gameState.recentPlays
+  if (rp.length === 0) return -1
+  const name = rp[0][0]
+  return props.gameState.players.findIndex(p => p.name === name)
+})
+
+let dealing = false
+
+// Run deal animation on mount if this is a new game
+onMounted(() => {
+  if (props.isNewGame) {
+    dealing = true
+    nextTick(() => {
+      animateDeal(() => {
+        dealing = false
+        emit('dealComplete')
+        updateArrow(false)
+      })
+    })
+  } else {
+    nextTick(() => {
+      updateArrow(false)
+      updateDiscardAnimation(false)
+    })
+  }
+})
+
+// Watch for state changes to animate arrow + discard
+watch(() => [props.gameState.currentPlayer, props.gameState.direction], () => {
+  if (!dealing) {
+    nextTick(() => updateArrow(true))
+  }
+})
+
+watch(() => props.gameState.discardPile[0], () => {
+  if (!dealing) {
+    nextTick(() => updateDiscardAnimation(true))
+  }
+})
+
+watch(() => props.gameState.players[0]?.hand.length, (newLen, oldLen) => {
+  if (!dealing && oldLen !== undefined && newLen > oldLen) {
+    nextTick(() => updateDrawAnimation(true))
+  }
+})
+
 function onPlayCard(index: number) {
+  // Capture card position for fly animation
+  const cardEl = document.querySelector(`#human-hand-cards [data-card-index="${index}"]`) as HTMLElement | null
+  if (cardEl) capturePlayedCard(cardEl)
   emit('playCard', index)
+}
+
+function onDrawClick() {
+  if (!canDraw.value) return
+  captureDrawPile()
+  emit('drawCard')
 }
 
 // Drag & drop state
@@ -109,6 +170,17 @@ function onDrop(e: DragEvent) {
   </div>
 
   <div :class="['game-table', `game-table--${gameState.direction}`]">
+    <!-- Direction arrow -->
+    <svg class="direction-arrow" id="direction-arrow" :data-direction="gameState.direction" :data-from="arrowFrom" :data-to="arrowTo">
+      <defs>
+        <marker id="arrowhead" markerWidth="32" markerHeight="28" refX="32" refY="14" orient="auto" markerUnits="userSpaceOnUse">
+          <polygon points="0 0, 32 14, 0 28" fill="white" opacity="0.35" />
+        </marker>
+      </defs>
+      <path id="arrow-line" fill="none" stroke="white" stroke-opacity="0.3" stroke-width="12" />
+      <polygon id="arrow-head" fill="white" opacity="0.35" />
+    </svg>
+
     <!-- AI North (top) -->
     <div class="game-table__top">
       <AiHand
@@ -140,17 +212,21 @@ function onDrop(e: DragEvent) {
         </div>
 
         <div
+          id="draw-pile"
           :class="['draw-pile', canDraw && 'draw-pile--active']"
-          @click="canDraw && emit('drawCard')"
+          @click="onDrawClick"
         >
-          <div class="card card--back card--large">
-            <span class="card__uno-text">UNO</span>
+          <div class="draw-pile__cards">
+            <div class="draw-pile__deck card card--back card--large"><span class="card__uno-text">UNO</span></div>
+            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
+            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
+            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
           </div>
           <span class="draw-pile__label">Draw</span>
         </div>
 
         <div class="discard-area">
-          <DiscardPile v-if="top" :card="top" />
+          <DiscardPile v-if="top" :card="top" :last-player="lastPlayerIndex" />
         </div>
       </div>
     </div>
@@ -174,6 +250,7 @@ function onDrop(e: DragEvent) {
           <button v-if="showUnoBtn" class="uno-btn" @click="emit('sayUno')">UNO!</button>
         </div>
         <div
+          id="human-hand-cards"
           class="human-hand__cards"
           @dragstart="onDragStart"
           @dragend="onDragEnd"

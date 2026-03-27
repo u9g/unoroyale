@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import type { Color } from './engine/card'
 import { isWild } from './engine/card'
 import { useGameController } from './gameController'
@@ -13,6 +13,8 @@ const playerNameInput = ref('')
 const showMenu = ref(false)
 const showRules = ref(false)
 const choosingColor = ref(false)
+const isNewGame = ref(false)
+const showUnoPenalty = ref(false)
 let pendingWildIndex: number | null = null
 
 onMounted(() => {
@@ -23,6 +25,7 @@ onMounted(() => {
 function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
   localStorage.setItem('uno_player_name', name)
+  isNewGame.value = true
   controller.startGame(name)
 }
 
@@ -54,7 +57,12 @@ function newGameRestart() {
   showMenu.value = false
   choosingColor.value = false
   pendingWildIndex = null
+  isNewGame.value = true
   controller.restartGame()
+}
+
+function onDealComplete() {
+  isNewGame.value = false
 }
 
 function winnerName(): string {
@@ -62,6 +70,13 @@ function winnerName(): string {
   if (!gs || gs.winner == null) return ''
   return gs.players[gs.winner].name
 }
+
+// Watch for UNO penalty (player went to 0 cards without calling UNO, got penalized back to 2)
+watch(() => controller.gameState.value?.lastAction, (action) => {
+  if (action && action.includes('forgot to call UNO')) {
+    showUnoPenalty.value = true
+  }
+})
 
 // Simple markdown-to-HTML (covers headings, bold, tables, lists, paragraphs)
 function renderMarkdown(md: string): string {
@@ -129,8 +144,10 @@ function renderMarkdown(md: string): string {
     <!-- Playing -->
     <template v-else-if="controller.phase.value === 'playing' && controller.gameState.value">
       <GameBoard
+        :key="controller.gameState.value.drawPile.length + '-' + controller.gameState.value.players[0].name"
         :game-state="controller.gameState.value"
         :choosing-color="choosingColor"
+        :is-new-game="isNewGame"
         @play-card="handlePlayCard"
         @draw-card="controller.drawCard"
         @say-uno="controller.sayUno"
@@ -138,6 +155,7 @@ function renderMarkdown(md: string): string {
         @choose-color="handleChooseColor"
         @cancel-color="cancelColor"
         @reorder-hand="controller.reorderHand"
+        @deal-complete="onDealComplete"
       />
     </template>
 
@@ -153,6 +171,7 @@ function renderMarkdown(md: string): string {
         @choose-color="() => {}"
         @cancel-color="() => {}"
         @reorder-hand="() => {}"
+        @deal-complete="() => {}"
       />
       <GameOverOverlay :winner-name="winnerName()" @play-again="newGameRestart" />
     </template>
@@ -179,6 +198,15 @@ function renderMarkdown(md: string): string {
           <button class="rules-modal__close" @click="showRules = false">&times;</button>
         </div>
         <div class="rules-modal__body" v-html="renderMarkdown(rulesContent)"></div>
+      </div>
+    </div>
+
+    <!-- UNO Penalty Popup -->
+    <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">
+      <div class="uno-penalty-popup__card" @click.stop>
+        <h3 class="uno-penalty-popup__title">You forgot to say UNO!</h3>
+        <p class="uno-penalty-popup__text">When you play your second-to-last card, press the <strong>UNO</strong> button before playing your final card. If you don't, you'll draw 2 penalty cards instead of winning.</p>
+        <button class="uno-penalty-popup__btn" @click="showUnoPenalty = false">Got it</button>
       </div>
     </div>
   </div>
