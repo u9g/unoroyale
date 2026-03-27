@@ -11,7 +11,7 @@ export function playable(card: Card, topCard: Card): boolean {
 export function playableCards(hand: Card[], topCard: Card): [number, Card][] {
   return hand
     .map((card, idx) => [idx, card] as [number, Card])
-    .filter(([_, card]) => playable(card, topCard))
+    .filter(([, card]) => playable(card, topCard))
 }
 
 export function playableIndices(hand: Card[], topCard: Card): number[] {

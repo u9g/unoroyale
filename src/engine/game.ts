@@ -28,8 +28,8 @@ export function newGame(playerName: string): GameState {
   }
 
   // Draw starting card (no Wild Draw Four allowed)
-  let firstCard: Card
-  ;[firstCard, deck] = drawStartingCard(deck)
+  const [firstCard, remainingDeck] = drawStartingCard(deck)
+  deck = remainingDeck
 
   const state: GameState = {
     players: dealtPlayers,

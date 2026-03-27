@@ -2,7 +2,7 @@
 import type { Card, Color } from '../engine/card'
 import { displayColor, displayValue, isWild } from '../engine/card'
 
-const props = defineProps<{
+defineProps<{
   card: Card
   lastPlayer?: number
 }>()
