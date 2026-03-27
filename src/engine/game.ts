@@ -168,7 +168,9 @@ function doPlayCard(
     if (!player.saidUno) {
       // Penalty: draw 2, no win
       s = unoPenalty(s, playerIndex)
+      const penaltyAction = s.lastAction
       s = applyCardEffect(s, playedCard, playerIndex)
+      s = { ...s, lastAction: `${penaltyAction} ${s.lastAction}` }
       return { ok: true, state: s }
     } else {
       return {

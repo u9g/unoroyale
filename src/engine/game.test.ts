@@ -282,6 +282,7 @@ describe('UNO penalty', () => {
     if (result.ok) {
       expect(result.state.phase).toBe('playing')
       expect(handSize(result.state.players[0])).toBe(2)
+      expect(result.state.lastAction).toContain('forgot to call UNO')
     }
   })
 
