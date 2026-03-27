@@ -180,7 +180,7 @@ function renderMarkdown(md: string): string {
     </template>
 
     <!-- Menu Button -->
-    <button class="menu-btn" @click="showMenu = !showMenu">Menu</button>
+    <button :class="['menu-btn', controller.phase.value === 'lobby' && 'menu-btn--lobby']" @click="showMenu = !showMenu">Menu</button>
 
     <!-- Pause Menu -->
     <div v-if="showMenu" class="modal-overlay" @click="showMenu = false">
