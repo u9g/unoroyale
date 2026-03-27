@@ -577,6 +577,48 @@ function onDrawClick() {
 
 // Drag & drop state
 let dragIdx: number | null = null
+let dropIndicator: HTMLElement | null = null
+
+function getDropPosition(clientX: number, container: HTMLElement): { closest: Element | null; insertAfter: boolean } {
+  const cards = Array.from(container.querySelectorAll('[data-card-index]'))
+  let closest: Element | null = null
+  let closestDist = Infinity
+  let insertAfter = false
+
+  for (const card of cards) {
+    const rect = card.getBoundingClientRect()
+    const midX = rect.left + rect.width / 2
+    const dist = Math.abs(clientX - midX)
+    if (dist < closestDist) {
+      closestDist = dist
+      closest = card
+      insertAfter = clientX >= midX
+    }
+  }
+
+  return { closest, insertAfter }
+}
+
+function showDropIndicator(container: HTMLElement, closest: Element, insertAfter: boolean) {
+  if (!dropIndicator) {
+    dropIndicator = document.createElement('div')
+    dropIndicator.className = 'drop-indicator'
+  }
+  const containerRect = container.getBoundingClientRect()
+  const cardRect = closest.getBoundingClientRect()
+  dropIndicator.style.height = cardRect.height + 'px'
+  dropIndicator.style.left = (insertAfter ? cardRect.right : cardRect.left) - containerRect.left + 'px'
+  dropIndicator.style.top = cardRect.top - containerRect.top + 'px'
+  if (!dropIndicator.parentElement) {
+    container.appendChild(dropIndicator)
+  }
+}
+
+function removeDropIndicator() {
+  if (dropIndicator && dropIndicator.parentElement) {
+    dropIndicator.remove()
+  }
+}
 
 function onDragStart(e: DragEvent) {
   const target = (e.target as HTMLElement).closest('[data-card-index]') as HTMLElement | null
@@ -590,35 +632,32 @@ function onDragEnd(e: DragEvent) {
   const target = (e.target as HTMLElement).closest('[data-card-index]') as HTMLElement | null
   if (target) target.classList.remove('card--dragging')
   dragIdx = null
+  removeDropIndicator()
 }
 
 function onDragOver(e: DragEvent) {
   e.preventDefault()
   if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
+  if (dragIdx === null) return
+
+  const container = (e.target as HTMLElement).closest('.human-hand__cards') as HTMLElement | null
+  if (!container) return
+
+  const { closest, insertAfter } = getDropPosition(e.clientX, container)
+  if (closest) {
+    showDropIndicator(container, closest, insertAfter)
+  }
 }
 
 function onDrop(e: DragEvent) {
   e.preventDefault()
+  removeDropIndicator()
   if (dragIdx === null) return
 
-  const container = (e.target as HTMLElement).closest('.human-hand__cards')
+  const container = (e.target as HTMLElement).closest('.human-hand__cards') as HTMLElement | null
   if (!container) return
 
-  const cards = Array.from(container.querySelectorAll('[data-card-index]'))
-  let closest: Element | null = null
-  let closestDist = Infinity
-  let insertAfter = false
-
-  for (const card of cards) {
-    const rect = card.getBoundingClientRect()
-    const midX = rect.left + rect.width / 2
-    const dist = Math.abs(e.clientX - midX)
-    if (dist < closestDist) {
-      closestDist = dist
-      closest = card
-      insertAfter = e.clientX >= midX
-    }
-  }
+  const { closest, insertAfter } = getDropPosition(e.clientX, container)
 
   if (closest) {
     let dropIdx = parseInt((closest as HTMLElement).dataset.cardIndex!)
