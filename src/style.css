@@ -887,6 +887,38 @@ body {
   margin: 0;
 }
 
+.rules-modal--expanded {
+  max-width: 95%;
+  max-height: 95vh;
+}
+
+.rules-modal__actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.rules-modal__expand {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 1px;
+  background: none;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+  padding: 0;
+}
+
+.rules-modal__expand--active {
+  border-radius: 1px;
+  box-shadow: 3px -3px 0 -1px #1e293b, 3px -3px 0 0.5px rgba(255,255,255,0.6);
+}
+
+.rules-modal__expand:hover {
+  opacity: 1;
+}
+
 .rules-modal__close {
   background: none;
   border: none;
@@ -906,6 +938,25 @@ body {
   overflow-y: auto;
   line-height: 1.6;
   font-size: 0.9rem;
+  scrollbar-color: rgba(255,255,255,0.25) transparent;
+  scrollbar-width: thin;
+}
+
+.rules-modal__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.rules-modal__body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.rules-modal__body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.25);
+  border-radius: 3px;
+}
+
+.rules-modal__body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.4);
 }
 
 .rules-modal__body h1 { display: none; margin: 0; }

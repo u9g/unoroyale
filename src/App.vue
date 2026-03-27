@@ -12,6 +12,7 @@ const controller = useGameController()
 const playerNameInput = ref('')
 const showMenu = ref(false)
 const showRules = ref(false)
+const rulesExpanded = ref(false)
 const choosingColor = ref(false)
 const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
@@ -212,10 +213,13 @@ function renderMarkdown(md: string): string {
 
     <!-- Rules Modal -->
     <div v-if="showRules" class="modal-overlay" @click="showRules = false">
-      <div class="rules-modal" @click.stop>
+      <div :class="['rules-modal', rulesExpanded && 'rules-modal--expanded']" @click.stop>
         <div class="rules-modal__header">
           <h2>Game Info</h2>
-          <button class="rules-modal__close" @click="showRules = false">&times;</button>
+          <div class="rules-modal__actions">
+            <button :class="['rules-modal__expand', rulesExpanded && 'rules-modal__expand--active']" @click="rulesExpanded = !rulesExpanded"></button>
+            <button class="rules-modal__close" @click="showRules = false; rulesExpanded = false">&times;</button>
+          </div>
         </div>
         <div class="rules-modal__body" v-html="renderMarkdown(rulesContent)"></div>
       </div>
