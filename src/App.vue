@@ -163,6 +163,7 @@ function renderMarkdown(md: string): string {
         @cancel-color="cancelColor"
         @reorder-hand="controller.reorderHand"
         @deal-complete="onDealComplete"
+        @menu="showMenu = !showMenu"
       />
     </template>
 
@@ -179,12 +180,13 @@ function renderMarkdown(md: string): string {
         @cancel-color="() => {}"
         @reorder-hand="() => {}"
         @deal-complete="() => {}"
+        @menu="showMenu = !showMenu"
       />
       <GameOverOverlay :winner-name="winnerName()" @play-again="newGameRestart" />
     </template>
 
-    <!-- Menu Button -->
-    <button :class="['menu-btn', controller.phase.value === 'lobby' && 'menu-btn--lobby']" @click="showMenu = !showMenu">Menu</button>
+    <!-- Menu Button (lobby only; in-game button is inside GameBoard) -->
+    <button v-if="controller.phase.value === 'lobby'" class="menu-btn menu-btn--lobby" @click="showMenu = !showMenu">Menu</button>
 
     <!-- Pause Menu -->
     <div v-if="showMenu" class="modal-overlay" @click="showMenu = false">

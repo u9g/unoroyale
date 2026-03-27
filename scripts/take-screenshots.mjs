@@ -92,7 +92,33 @@ async function injectState(page, state, opts = {}) {
     gameOver: opts.gameOver || false,
   });
 
-  await page.waitForSelector('.game-table', { timeout: 10000 });
+  await page.waitForFunction(({ gameOver, choosingColor, topValue, topColor }) => {
+    const app = window.__app;
+    if (!app) return false;
+
+    const targetPhase = gameOver ? 'game_over' : 'playing';
+    if (app.controller.phase.value !== targetPhase) return false;
+    if (!!app.choosingColor.value !== choosingColor) return false;
+    if (document.querySelectorAll('.game-table').length !== 1) return false;
+
+    if (gameOver) {
+      return document.querySelectorAll('.game-over').length === 1;
+    }
+
+    const discard = document.getElementById('discard-top');
+    return !!discard &&
+      discard.dataset.value === topValue &&
+      discard.dataset.color === topColor;
+  }, {
+    gameOver: opts.gameOver || false,
+    choosingColor: !!opts.choosingColor,
+    topValue: String(state.discardPile[0]?.value ?? ''),
+    topColor: state.discardPile[0]?.chosenColor ?? state.discardPile[0]?.color ?? '',
+  }, { timeout: 10000 });
+
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  ));
 }
 
 // ---------------------------------------------------------------------------
@@ -130,8 +156,8 @@ const SCENARIOS = [
       lastAction: 'Sofia played Red 4',
       recentPlays: [
         ['Sofia',      { color: 'red',  value: 4 }],
-        ['Marcus',     { color: 'red',  value: 'reverse' }],
-        ['Luna',       { color: 'blue', value: 'reverse' }],
+        ['Marcus',     { color: 'red',  value: 'reverse', reverseTo: 'clockwise' }],
+        ['Luna',       { color: 'blue', value: 'reverse', reverseTo: 'counter_clockwise' }],
         [PLAYER_NAME,  { color: 'blue', value: 6 }],
       ],
     },
@@ -214,7 +240,7 @@ async function main() {
   const browser = await chromium.launch();
 
   try {
-    // One context + one page per device, reused across all scenarios — devices run in parallel
+    // One context per device; use a fresh page per scenario to avoid stale DOM carrying between shots.
     await Promise.all(DEVICES.map(async (device) => {
       const dir = path.join(OUTPUT, device.name);
       await mkdir(dir, { recursive: true });
@@ -226,20 +252,20 @@ async function main() {
         hasTouch: true,
       });
 
-      const page = await context.newPage();
-      await loadApp(page);
-
       for (const scenario of SCENARIOS) {
+        const page = await context.newPage();
         try {
+          await loadApp(page);
           await injectState(page, scenario.state, scenario.opts);
           await page.screenshot({ path: path.join(dir, `${scenario.name}.jpg`), type: 'jpeg', quality: 90 });
           console.log(`  ${device.name}/${scenario.name}.jpg`);
         } catch (err) {
           console.error(`  ERROR ${device.name}/${scenario.name}: ${err.message}`);
+        } finally {
+          await page.close();
         }
       }
 
-      await page.close();
       await context.close();
     }));
   } finally {

@@ -30,8 +30,9 @@ function calcArrowPositions(): ArrowPositions | null {
   if (!table) return null
 
   const tableRect = table.getBoundingClientRect()
-  const isMobile = window.innerWidth <= 640
-  const gap = isMobile ? 20 : 35
+  const isCompact = window.innerWidth <= 1100
+  const isPhone = window.innerWidth <= 640
+  const gap = isPhone ? 20 : 35
 
   const getPlayerCards = (idx: number): HTMLElement | null => {
     if (idx === 0) return table.querySelector('.human-hand__cards')
@@ -116,13 +117,13 @@ function calcArrowPositions(): ArrowPositions | null {
     return null
   }
 
-  const getEdgePoint = isMobile ? getMobileEdgePoint : getDesktopEdgePoint
+  const getEdgePoint = isCompact ? getMobileEdgePoint : getDesktopEdgePoint
   const start = getEdgePoint(from, to)
   const end = getEdgePoint(to, from)
   if (!start || !end) return null
 
   let cpX: number, cpY: number
-  const edgePad = isMobile ? 8 : 12
+  const edgePad = isPhone ? 8 : 12
   if (start._humanArc || end._humanArc) {
     const arcRight = start._arcRight || end._arcRight
     cpX = arcRight ? tableRect.width - edgePad : edgePad
@@ -142,7 +143,7 @@ function calcArrowPositions(): ArrowPositions | null {
     const awayX = midX - centerX
     const awayY = midY - centerY
     const awayDist = Math.sqrt(awayX * awayX + awayY * awayY) || 1
-    const curvature = isMobile ? 40 : 80
+    const curvature = isPhone ? 40 : 80
     cpX = midX + (awayX / awayDist) * curvature
     cpY = midY + (awayY / awayDist) * curvature
   }
@@ -155,8 +156,8 @@ function applyArrowPositions(p: ArrowPositions) {
   const head = document.getElementById('arrow-head')
   if (!line) return
 
-  const isMobile = window.innerWidth <= 640
-  const hl = isMobile ? 28 : 48
+  const isPhone = window.innerWidth <= 640
+  const hl = isPhone ? 28 : 48
   const dx = p.ex - p.cpX
   const dy = p.ey - p.cpY
   const dist = Math.sqrt(dx * dx + dy * dy)
@@ -168,7 +169,7 @@ function applyArrowPositions(p: ArrowPositions) {
   line.setAttribute('d', `M ${p.sx} ${p.sy} Q ${p.cpX} ${p.cpY} ${lineEndX} ${lineEndY}`)
 
   if (head) {
-    const hw = isMobile ? 14 : 24
+    const hw = isPhone ? 14 : 24
     head.setAttribute('points',
       `${p.ex - nx * hl + ny * hw} ${p.ey - ny * hl - nx * hw}, ${p.ex} ${p.ey}, ${p.ex - nx * hl - ny * hw} ${p.ey - ny * hl + nx * hw}`
     )
@@ -487,6 +488,7 @@ const emit = defineEmits<{
   cancelColor: []
   reorderHand: [from: number, to: number]
   dealComplete: []
+  menu: []
 }>()
 
 const human = computed(() => props.gameState.players[0])
@@ -734,7 +736,9 @@ function onDrop(e: DragEvent) {
         <div class="discard-area">
           <DiscardPile v-if="top" :card="top" :last-player="lastPlayerIndex" />
         </div>
+
       </div>
+      <button v-if="gameState.phase !== 'game_over'" class="menu-btn" @click="emit('menu')">Menu</button>
     </div>
 
     <!-- AI East (right) -->

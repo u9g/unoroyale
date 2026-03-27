@@ -219,7 +219,7 @@ body {
   position: relative;
   display: flex;
   gap: 2rem;
-  align-items: flex-start;
+  align-items: center;
 }
 
 /* ---- Cards ---- */
@@ -771,26 +771,22 @@ body {
 
 /* ---- Menu Button & Pause Menu ---- */
 .menu-btn {
-  position: fixed;
-  bottom: 50%;
-  left: 50%;
-  transform: translate(-50%, 4.5rem);
   padding: 0.4rem 1rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--card-radius);
+  border: var(--card-border) solid rgba(255,255,255,0.3);
   background: rgba(0,0,0,0.3);
   color: #fff;
   font-size: 0.85rem;
   cursor: pointer;
   z-index: 50;
   transition: background 0.15s;
+  align-self: center;
 }
 
 .menu-btn--lobby {
+  position: fixed;
   bottom: 1rem;
-  left: auto;
   right: 1rem;
-  transform: none;
 }
 
 .menu-btn:hover {
@@ -994,7 +990,151 @@ body {
   }
 }
 
-/* ---- Mobile Layout ---- */
+/* ---- Compact Layout (Tablet + Phone) ---- */
+@media (width <= 1100px) {
+  /* Row-based stacked layout */
+  .game-table {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    grid-template-areas:
+      "left   top    right"
+      "center center center"
+      "bottom bottom bottom";
+  }
+
+  .game-table__top,
+  .game-table__left,
+  .game-table__right {
+    justify-content: center;
+  }
+
+  /* All AI hands horizontal */
+  .ai-hand__cards--left,
+  .ai-hand__cards--right {
+    flex-direction: row;
+  }
+
+  .ai-card--left,
+  .ai-card--right {
+    margin-top: 0;
+    margin-left: var(--ai-overlap-h);
+  }
+
+  .ai-card--left:first-child,
+  .ai-card--right:first-child {
+    margin-left: 0;
+  }
+
+  /* Top bar */
+  .top-bar {
+    display: none;
+  }
+}
+
+/* ---- Tablet Sizes (641px – 1100px) ---- */
+@media (641px <= width <= 1100px) {
+  :root {
+    --card-w: 80px;
+    --card-h: 115px;
+    --card-font: 1.7rem;
+    --card-border: 3px;
+    --card-radius: 12px;
+
+    --card-sm-w: 52px;
+    --card-sm-h: 75px;
+    --card-sm-font: 0.8rem;
+
+    --card-lg-w: 105px;
+    --card-lg-h: 152px;
+    --card-lg-font: 2.3rem;
+
+    --hand-overlap: 8px;
+    --hover-lift: -20px;
+    --ai-overlap-h: -30px;
+    --ai-overlap-v: -45px;
+  }
+
+  .your-turn-indicator {
+    font-size: 4rem;
+  }
+
+  .ai-hand__label {
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+  }
+
+  .ai-hand__count {
+    font-size: 0.8rem;
+  }
+
+  .ai-hand__target-badge {
+    font-size: 0.75rem;
+  }
+
+  .human-hand__label {
+    font-size: 1rem;
+  }
+
+  .draw-pile__label {
+    font-size: 0.9rem;
+  }
+
+  .uno-btn {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+  }
+
+  .menu-btn {
+    font-size: 1rem;
+    padding: 0.5rem 1.25rem;
+  }
+
+  .color-btn {
+    width: 90px;
+    height: 90px;
+  }
+
+  .game-over {
+    padding: 3rem 4rem;
+  }
+
+  .game-over__title {
+    font-size: 2.5rem;
+  }
+
+  .recent-play .card {
+    width: 52px;
+    height: 75px;
+    font-size: 1rem;
+  }
+
+  .recent-play .card__center {
+    font-size: 1.2rem;
+  }
+
+  .recent-plays__label {
+    font-size: 0.85rem;
+  }
+
+  .pass-btn {
+    font-size: 1.1rem;
+    padding: 0.6rem 1.5rem;
+  }
+
+  .card__center {
+    font-size: 1.8rem;
+  }
+
+  .card__center--large {
+    font-size: 2.4rem;
+  }
+
+  .card__corner {
+    font-size: 0.75rem;
+  }
+}
+
+/* ---- Phone Sizes (≤ 640px) ---- */
 @media (width <= 640px) {
   :root {
     --card-w: 52px;
@@ -1015,44 +1155,6 @@ body {
     --hover-lift: -12px;
     --ai-overlap-h: -18px;
     --ai-overlap-v: -30px;
-  }
-
-  /* Single-column stacked layout */
-  .game-table {
-    grid-template-columns: 1fr 1fr 1fr;
-    grid-template-rows: auto 1fr auto;
-    grid-template-areas:
-      "left   top    right"
-      "center center center"
-      "bottom bottom bottom";
-  }
-
-  .game-table__top,
-  .game-table__left,
-  .game-table__right {
-    justify-content: center;
-  }
-
-  /* All AI hands horizontal on mobile */
-  .ai-hand__cards--left,
-  .ai-hand__cards--right {
-    flex-direction: row;
-  }
-
-  .ai-card--left,
-  .ai-card--right {
-    margin-top: 0;
-    margin-left: var(--ai-overlap-h);
-  }
-
-  .ai-card--left:first-child,
-  .ai-card--right:first-child {
-    margin-left: 0;
-  }
-
-  /* Top bar */
-  .top-bar {
-    display: none;
   }
 
   .top-bar__title {
