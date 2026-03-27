@@ -732,7 +732,6 @@ function onDrop(e: DragEvent) {
           <div class="card card--back card--large">
             <span class="card__uno-text">UNO</span>
           </div>
-          <span class="draw-pile__label">Draw</span>
         </div>
 
         <div class="discard-area">
