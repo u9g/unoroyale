@@ -305,29 +305,31 @@ export function updateDiscardAnimation(animate: boolean) {
 }
 
 // --- Draw Animation (card flies from draw pile to hand with 3D flip) ---
+// Desktop version: source is the single draw pile card, no fan
 
 export function updateDrawAnimation(animate: boolean) {
   const targetCard = document.querySelector('#human-hand-cards [data-card-index]:last-child') as HTMLElement | null
-  const fromRect = (window as any)._lastDrawPileRect as DOMRect | null
-  const age = Date.now() - ((window as any)._lastDrawTime || 0)
+  const drawPile = document.querySelector('.draw-pile .card') as HTMLElement | null
 
-  if (!animate || !fromRect || !targetCard || age > 2000) {
-    if (!animate || age > 2000 || !targetCard) {
-      ;(window as any)._lastDrawPileRect = null
-      ;(window as any)._lastDrawTime = null
-    }
+  if (!animate || !targetCard || !drawPile || !(window as any)._lastDrawTime) return
+
+  const age = Date.now() - ((window as any)._lastDrawTime || 0)
+  if (age > 2000) {
+    ;(window as any)._lastDrawTime = null
     return
   }
 
+  const srcRect = drawPile.getBoundingClientRect()
   const destRect = targetCard.getBoundingClientRect()
+
   targetCard.style.visibility = 'hidden'
   targetCard.style.opacity = '0'
 
   const flipper = document.createElement('div')
   flipper.style.cssText = `
-    position: fixed; z-index: 50; pointer-events: none;
-    left: ${fromRect.left}px; top: ${fromRect.top}px;
-    width: ${fromRect.width}px; height: ${fromRect.height}px;
+    position: fixed; z-index: 1000; pointer-events: none;
+    left: ${srcRect.left}px; top: ${srcRect.top}px;
+    width: ${srcRect.width}px; height: ${srcRect.height}px;
     perspective: 800px;
     transition: left 0.4s ease-in-out, top 0.4s ease-in-out, width 0.4s ease-in-out, height 0.4s ease-in-out;
   `
@@ -369,192 +371,81 @@ export function updateDrawAnimation(animate: boolean) {
     targetCard.style.opacity = ''
   }, 750)
 
-  // Replenish fan
-  const fanCard = document.querySelector('#draw-pile .card-fan__card:last-child') as HTMLElement | null
-  const deckCard = document.querySelector('#draw-pile .draw-pile__deck') as HTMLElement | null
-  if (fanCard && deckCard) {
-    fanCard.remove()
-    setTimeout(() => replenishFan(deckCard, null), 250)
-  }
-
-  ;(window as any)._lastDrawPileRect = null
   ;(window as any)._lastDrawTime = null
 }
 
 // --- Deal Animation ---
-
-function flyClone(fromRect: DOMRect, toRect: DOMRect, className: string, innerHTML: string, duration: number, zIndex: number): HTMLElement {
-  const clone = document.createElement('div')
-  clone.className = className
-  clone.innerHTML = innerHTML
-  clone.style.cssText = `
-    position: fixed; z-index: ${zIndex}; pointer-events: none;
-    left: ${toRect.left}px; top: ${toRect.top}px;
-    width: ${toRect.width}px; height: ${toRect.height}px;
-  `
-  document.body.appendChild(clone)
-
-  const anim = clone.animate([
-    { left: fromRect.left + 'px', top: fromRect.top + 'px', width: fromRect.width + 'px', height: fromRect.height + 'px' },
-    { left: toRect.left + 'px', top: toRect.top + 'px', width: toRect.width + 'px', height: toRect.height + 'px' },
-  ], { duration, easing: 'cubic-bezier(0.25, 1, 0.5, 1)', fill: 'forwards' })
-
-  ;(clone as any)._anim = anim
-  return clone
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise(r => setTimeout(r, ms))
-}
-
-function replenishFan(deckCard: HTMLElement, fanCardEl: HTMLElement | null) {
-  const container = fanCardEl ? fanCardEl.parentElement : deckCard.parentElement
-  if (!container) return
-
-  const easing = 'cubic-bezier(0.25, 1, 0.5, 1)'
-  const slideDuration = 300
-
-  const siblings = Array.from(container.querySelectorAll('.card-fan__card')).filter(c => c !== fanCardEl) as HTMLElement[]
-  const beforeRects = siblings.map(c => c.getBoundingClientRect())
-
-  if (fanCardEl) fanCardEl.remove()
-
-  const newCard = document.createElement('div')
-  newCard.className = 'card card--back card--large card-fan__card'
-  newCard.innerHTML = '<span class="card__uno-text">UNO</span>'
-
-  const firstFan = container.querySelector('.card-fan__card')
-  if (firstFan) {
-    container.insertBefore(newCard, firstFan)
-  } else {
-    container.appendChild(newCard)
-  }
-
-  const afterRects = siblings.map(c => c.getBoundingClientRect())
-  const newCardRect = newCard.getBoundingClientRect()
-  const deckRect = deckCard.getBoundingClientRect()
-
-  siblings.forEach((c, i) => {
-    const dx = beforeRects[i].left - afterRects[i].left
-    if (Math.abs(dx) > 0.5) {
-      c.animate([
-        { transform: `translateX(${dx}px)` },
-        { transform: 'translateX(0)' },
-      ], { duration: slideDuration, easing })
-    }
-  })
-
-  const newDx = deckRect.left - newCardRect.left
-  newCard.animate([
-    { transform: `translateX(${newDx}px)` },
-    { transform: 'translateX(0)' },
-  ], { duration: slideDuration, easing })
-}
+// Desktop version: cards fly from draw pile card to each hand with staggered 3D flip
 
 export function animateDeal(onComplete?: () => void) {
-  _animateDeal().then(() => onComplete?.())
-}
+  const drawPile = document.querySelector('.draw-pile .card') as HTMLElement | null
+  if (!drawPile) { onComplete?.(); return }
 
-async function _animateDeal() {
-  const deckCard = document.querySelector('#draw-pile .draw-pile__deck') as HTMLElement | null
-  if (!deckCard) return
+  const srcRect = drawPile.getBoundingClientRect()
 
-  const table = document.querySelector('.game-table') as HTMLElement | null
-  if (!table) return
+  // Collect all card targets: human hand cards
+  const humanCards = Array.from(document.querySelectorAll('#human-hand-cards [data-card-index]')) as HTMLElement[]
+  if (humanCards.length === 0) { onComplete?.(); return }
 
-  const fanCards = Array.from(document.querySelectorAll('#draw-pile .card-fan__card')) as HTMLElement[]
-  const backClass = 'card card--back card--large'
-  const backUno = '<span class="card__uno-text">UNO</span>'
-  const cardsContainer = deckCard.parentElement!
+  // Hide all cards
+  humanCards.forEach(card => { card.style.visibility = 'hidden' })
 
-  const targets: { el: HTMLElement; player: number }[] = []
-  const aiSlots = [
-    { selector: '.game-table__left .ai-hand__cards .card', player: 1 },
-    { selector: '.game-table__top .ai-hand__cards .card', player: 2 },
-    { selector: '.game-table__right .ai-hand__cards .card', player: 3 },
-  ]
+  requestAnimationFrame(() => {
+    humanCards.forEach((card, i) => {
+      const destRect = card.getBoundingClientRect()
+      const delay = i * 80
 
-  for (const slot of aiSlots) {
-    const cards = table.querySelectorAll(slot.selector)
-    cards.forEach(c => targets.push({ el: c as HTMLElement, player: slot.player }))
-  }
+      const flipper = document.createElement('div')
+      flipper.style.cssText = `
+        position: fixed; z-index: 1000; pointer-events: none;
+        left: ${srcRect.left}px; top: ${srcRect.top}px;
+        width: ${srcRect.width}px; height: ${srcRect.height}px;
+        perspective: 800px;
+        transition: left 0.4s ease-in-out, top 0.4s ease-in-out, width 0.4s ease-in-out, height 0.4s ease-in-out;
+        transition-delay: ${delay}ms;
+      `
 
-  const humanCards = table.querySelectorAll('#human-hand-cards [data-card-index]')
-  humanCards.forEach(c => targets.push({ el: c as HTMLElement, player: 0 }))
+      const inner = document.createElement('div')
+      inner.style.cssText = `
+        width: 100%; height: 100%; position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.35s ease-in-out;
+      `
 
-  const discardEl = document.getElementById('discard-top')
-  if (targets.length === 0) return
+      const front = document.createElement('div')
+      front.className = 'card card--back'
+      front.innerHTML = '<span class="card__uno-text">UNO</span>'
+      front.style.cssText = 'position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px;'
 
-  // Clockwise dealing order
-  const perPlayer: { el: HTMLElement; player: number }[][] = [[], [], [], []]
-  targets.forEach(t => perPlayer[t.player].push(t))
-  const dealt: { el: HTMLElement; player: number }[] = []
-  const maxCards = Math.max(...perPlayer.map(p => p.length))
-  for (let i = 0; i < maxCards; i++) {
-    for (const p of [0, 1, 2, 3]) {
-      if (i < perPlayer[p].length) dealt.push(perPlayer[p][i])
-    }
-  }
+      const back = card.cloneNode(true) as HTMLElement
+      back.style.cssText = 'position: absolute; width: 100%; height: 100%; backface-visibility: hidden; transform: rotateY(180deg); border-radius: 10px;'
 
-  // Hide all targets and fan
-  dealt.forEach(t => { t.el.style.visibility = 'hidden'; t.el.style.opacity = '0' })
-  fanCards.forEach(fc => { fc.style.visibility = 'hidden'; fc.style.opacity = '0' })
-  if (discardEl) { discardEl.style.visibility = 'hidden'; discardEl.style.opacity = '0' }
+      inner.appendChild(front)
+      inner.appendChild(back)
+      flipper.appendChild(inner)
+      document.body.appendChild(flipper)
 
-  const flyDuration = 250
-  const dealDelay = 120
-
-  // Phase 1: Populate fan from deck
-  for (let i = 0; i < fanCards.length; i++) {
-    const fc = fanCards[i]
-    const clone = flyClone(deckCard.getBoundingClientRect(), fc.getBoundingClientRect(), backClass, backUno, flyDuration, 50 + i)
-    ;(clone as any)._anim.finished.then(() => {
-      clone.remove()
-      fc.style.visibility = ''
-      fc.style.opacity = ''
-    })
-    if (i < fanCards.length - 1) await wait(80)
-  }
-  await wait(flyDuration + 30)
-
-  // Phase 2: Deal cards one at a time from fan
-  for (let i = 0; i < dealt.length; i++) {
-    const t = dealt[i]
-    const fc = cardsContainer.querySelector('.card-fan__card:last-child') as HTMLElement | null
-    if (!fc) break
-
-    const fanRect = fc.getBoundingClientRect()
-    fc.style.visibility = 'hidden'
-    const clone = flyClone(fanRect, t.el.getBoundingClientRect(), backClass, backUno, flyDuration, 60 + i)
-    ;(clone as any)._anim.finished.then(() => {
-      clone.remove()
-      t.el.style.visibility = ''
-      t.el.style.opacity = ''
-    })
-
-    await wait(dealDelay / 2)
-    replenishFan(deckCard, fc)
-    await wait(dealDelay / 2)
-  }
-
-  await wait(50)
-
-  // Phase 3: Deal discard from fan
-  if (discardEl) {
-    const fc = cardsContainer.querySelector('.card-fan__card:last-child') as HTMLElement | null
-    if (fc) {
-      const fanRect = fc.getBoundingClientRect()
-      fc.style.visibility = 'hidden'
-      const clone = flyClone(fanRect, discardEl.getBoundingClientRect(), backClass, backUno, flyDuration, 90)
-      ;(clone as any)._anim.finished.then(() => {
-        clone.remove()
-        discardEl.style.visibility = ''
-        discardEl.style.opacity = ''
+      requestAnimationFrame(() => {
+        flipper.style.left = destRect.left + 'px'
+        flipper.style.top = destRect.top + 'px'
+        flipper.style.width = destRect.width + 'px'
+        flipper.style.height = destRect.height + 'px'
       })
-      replenishFan(deckCard, fc)
-      await wait(flyDuration + 100)
-    }
-  }
+
+      setTimeout(() => {
+        inner.style.transform = 'rotateY(180deg)'
+      }, 400 + delay)
+
+      setTimeout(() => {
+        flipper.remove()
+        card.style.visibility = ''
+      }, 750 + delay)
+    })
+
+    // Complete after last card finishes
+    const totalTime = 750 + (humanCards.length - 1) * 80 + 50
+    setTimeout(() => onComplete?.(), totalTime)
+  })
 }
 
 // --- Capture helpers (called from click handlers) ---
@@ -565,9 +456,5 @@ export function capturePlayedCard(cardEl: HTMLElement) {
 }
 
 export function captureDrawPile() {
-  const fanCard = document.querySelector('#draw-pile .card-fan__card:last-child') as HTMLElement | null
-  if (fanCard) {
-    ;(window as any)._lastDrawPileRect = fanCard.getBoundingClientRect()
-    ;(window as any)._lastDrawTime = Date.now()
-  }
+  ;(window as any)._lastDrawTime = Date.now()
 }

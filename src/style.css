@@ -554,20 +554,6 @@ body {
   opacity: 0.7;
 }
 
-/* ---- Card Fan (inside draw pile) ---- */
-.draw-pile__cards {
-  display: flex;
-  align-items: center;
-}
-
-.draw-pile__cards > * + * {
-  margin-left: calc(var(--card-lg-w) * -0.6);
-}
-
-.card-fan__card {
-  transition: opacity 0.2s ease, margin 0.15s ease, transform 0.15s ease;
-}
-
 /* ---- Discard Area ---- */
 .discard-area {
   display: flex;

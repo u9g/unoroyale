@@ -216,11 +216,8 @@ function onDrop(e: DragEvent) {
           :class="['draw-pile', canDraw && 'draw-pile--active']"
           @click="onDrawClick"
         >
-          <div class="draw-pile__cards">
-            <div class="draw-pile__deck card card--back card--large"><span class="card__uno-text">UNO</span></div>
-            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
-            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
-            <div class="card card--back card--large card-fan__card"><span class="card__uno-text">UNO</span></div>
+          <div class="card card--back card--large">
+            <span class="card__uno-text">UNO</span>
           </div>
           <span class="draw-pile__label">Draw</span>
         </div>
