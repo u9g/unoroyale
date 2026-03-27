@@ -29,6 +29,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  touch-action: manipulation;
 }
 
 html {
@@ -61,11 +62,12 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2rem;
+  gap: 0.75rem;
 }
 
 .lobby__title {
   user-select: none;
+  margin-bottom: 0.75rem;
   font-size: 4rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -118,6 +120,26 @@ body {
 .lobby__btn:hover {
   transform: scale(1.05);
   background: #dc2626;
+}
+
+.lobby__tutorial-btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-align: center;
+  transition: transform 0.15s, background 0.15s;
+}
+
+.lobby__tutorial-btn:hover {
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.25);
+  color: #fff;
 }
 
 /* ---- Top Bar ---- */
@@ -823,13 +845,17 @@ body {
   transition: transform 0.1s;
 }
 
-.pause-menu__btn:hover { transform: scale(1.05); }
 .pause-menu__btn--resume { background: rgba(255,255,255,0.15); }
-.pause-menu__btn--resume:hover { background: rgba(255,255,255,0.25); }
 .pause-menu__btn--feedback { background: rgba(255,255,255,0.15); }
-.pause-menu__btn--feedback:hover { background: rgba(255,255,255,0.25); }
 .pause-menu__btn--rules { background: rgba(255,255,255,0.15); }
-.pause-menu__btn--rules:hover { background: rgba(255,255,255,0.25); }
+
+@media (hover: hover) {
+  .pause-menu__btn:hover { transform: scale(1.05); }
+  .pause-menu__btn--resume:hover { background: rgba(255,255,255,0.25); }
+  .pause-menu__btn--feedback:hover { background: rgba(255,255,255,0.25); }
+  .pause-menu__btn--rules:hover { background: rgba(255,255,255,0.25); }
+}
+
 .pause-menu__toggle {
   display: flex; align-items: center; gap: 12px;
   padding: 0.6rem 2rem; border-radius: 8px;
@@ -838,7 +864,11 @@ body {
   width: 100%; box-sizing: border-box;
   transition: background 0.15s;
 }
-.pause-menu__toggle:hover { background: rgba(255,255,255,0.2); }
+
+@media (hover: hover) {
+  .pause-menu__toggle:hover { background: rgba(255,255,255,0.2); }
+}
+
 .pause-menu__toggle input { display: none; }
 .pause-menu__toggle .toggle-check {
   width: 22px; height: 22px; border-radius: 5px;
@@ -860,6 +890,8 @@ body {
 .pause-menu__toggle input:checked + .toggle-check::after {
   opacity: 1;
 }
+.pause-menu__btn--tutorial { background: #3b82f6; }
+.pause-menu__btn--tutorial:hover { background: #2563eb; }
 .pause-menu__btn--new-game { background: #ef4444; }
 .pause-menu__btn--new-game:hover { background: #dc2626; }
 
@@ -1023,6 +1055,222 @@ body {
   transform: scale(1.05);
   background: rgba(255,255,255,0.25);
 }
+
+/* ---- Tutorial Overlay ---- */
+.tutorial {
+  background: #1e293b;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 520px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  animation: scale-in 0.2s ease;
+  overflow: hidden;
+}
+
+.tutorial__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1.5rem 0.75rem;
+  position: relative;
+}
+
+.tutorial__dots {
+  display: flex;
+  gap: 8px;
+}
+
+.tutorial__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transition: background 0.2s, transform 0.2s;
+}
+
+.tutorial__dot--active {
+  background: #eab308;
+  transform: scale(1.3);
+}
+
+.tutorial__dot--done {
+  background: rgba(234,179,8,0.5);
+}
+
+.tutorial__close {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+  transition: color 0.15s;
+}
+
+.tutorial__close:hover { color: #fff; }
+
+.tutorial__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 2rem 1.5rem;
+  text-align: center;
+}
+
+.tutorial__step-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #eab308;
+  margin: 0 0 1rem;
+}
+
+.tutorial__cards {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: center;
+  margin: 0.75rem 0 1rem;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.tutorial__match-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.75rem 0 1rem;
+}
+
+.tutorial__card-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tutorial__card-group-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+}
+
+.tutorial__match-arrow {
+  font-size: 1.5rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 1rem;
+}
+
+.tutorial__cards .card {
+  pointer-events: none;
+}
+
+.tutorial__color-circles {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.tutorial__color-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,0.3);
+  transition: transform 0.15s;
+}
+
+.tutorial__color-circle:hover { transform: scale(1.1); }
+.tutorial__color-circle--red { background: #ef4444; }
+.tutorial__color-circle--blue { background: #3b82f6; }
+.tutorial__color-circle--green { background: #22c55e; }
+.tutorial__color-circle--yellow { background: #eab308; }
+
+.tutorial__uno-demo {
+  margin: 1rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.uno-btn--demo {
+  pointer-events: none;
+  animation: tutorial-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes tutorial-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.tutorial__step-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+  margin: 0 0 0.75rem;
+}
+
+.tutorial__tip {
+  background: rgba(234,179,8,0.1);
+  border-left: 3px solid #eab308;
+  padding: 0.6rem 1rem;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.85);
+  text-align: left;
+  margin-top: 0.5rem;
+}
+
+.tutorial__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.tutorial__btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.1s, background 0.15s;
+}
+
+.tutorial__btn:hover { transform: scale(1.05); }
+
+.tutorial__btn--prev {
+  background: rgba(255,255,255,0.15);
+}
+
+.tutorial__btn--prev:hover { background: rgba(255,255,255,0.25); }
+
+.tutorial__btn--next {
+  background: #3b82f6;
+}
+
+.tutorial__btn--next:hover { background: #2563eb; }
+
+/* Tutorial step transitions */
+.tutorial-slide-left-enter-active,
+.tutorial-slide-left-leave-active,
+.tutorial-slide-right-enter-active,
+.tutorial-slide-right-leave-active {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.tutorial-slide-left-enter-from { transform: translateX(30px); opacity: 0; }
+.tutorial-slide-left-leave-to { transform: translateX(-30px); opacity: 0; }
+.tutorial-slide-right-enter-from { transform: translateX(-30px); opacity: 0; }
+.tutorial-slide-right-leave-to { transform: translateX(30px); opacity: 0; }
 
 
 /* ---- Compact Layout (Tablet + Phone) ---- */
@@ -1446,5 +1694,99 @@ body {
 
   .card__center--large {
     font-size: 1.3rem;
+  }
+
+  /* Tutorial adjustments for landscape phone */
+  .tutorial {
+    max-height: 95vh;
+    max-width: 480px;
+  }
+
+  .tutorial__header {
+    padding: 0.6rem 1rem 0.4rem;
+  }
+
+  .tutorial__dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  .tutorial__close {
+    right: 0.5rem;
+    top: 0.4rem;
+    font-size: 1.2rem;
+  }
+
+  .tutorial__body {
+    padding: 0.25rem 1.25rem 0.75rem;
+  }
+
+  .tutorial__step-title {
+    font-size: 1.1rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .tutorial__step-text {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+
+  .tutorial__cards {
+    gap: 0.5rem;
+    margin: 0.4rem 0 0.6rem;
+  }
+
+  .tutorial__cards .card {
+    width: 48px;
+    height: 69px;
+  }
+
+  .tutorial__match-row {
+    gap: 0.6rem;
+    margin: 0.4rem 0 0.6rem;
+  }
+
+  .tutorial__match-row .card {
+    width: 48px;
+    height: 69px;
+  }
+
+  .tutorial__card-group-label {
+    font-size: 0.55rem;
+  }
+
+  .tutorial__match-arrow {
+    font-size: 1.1rem;
+    margin-top: 0.75rem;
+  }
+
+  .tutorial__color-circles {
+    gap: 0.6rem;
+    margin: 0.5rem 0;
+  }
+
+  .tutorial__color-circle {
+    width: 32px;
+    height: 32px;
+    border-width: 2px;
+  }
+
+  .tutorial__tip {
+    font-size: 0.78rem;
+    padding: 0.4rem 0.75rem;
+  }
+
+  .tutorial__footer {
+    padding: 0.5rem 1.25rem;
+  }
+
+  .tutorial__btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .tutorial__uno-demo .uno-btn {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.7rem;
   }
 }

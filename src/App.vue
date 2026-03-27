@@ -5,6 +5,7 @@ import { isWild } from './engine/card'
 import { useGameController } from './gameController'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
+import TutorialOverlay from './components/TutorialOverlay.vue'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
@@ -16,12 +17,13 @@ const rulesExpanded = ref(false)
 const choosingColor = ref(false)
 const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
+const showTutorial = ref(false)
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
 // Expose internals for screenshot tooling (dev only)
 if (import.meta.env.DEV) {
-  ;(window as any).__app = { controller, choosingColor, isNewGame }
+  ;(window as any).__app = { controller, choosingColor, isNewGame, showTutorial }
 }
 
 onMounted(() => {
@@ -152,6 +154,9 @@ function renderMarkdown(md: string): string {
           />
           <button type="submit" class="lobby__btn">Start Game</button>
         </form>
+        <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
+        <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>
+        <a class="lobby__tutorial-btn" href="mailto:uno@u9g.dev?subject=I%20have%20advice">Give Feedback</a>
       </div>
     </template>
 
@@ -192,22 +197,20 @@ function renderMarkdown(md: string): string {
       <GameOverOverlay :winner-name="winnerName()" @play-again="newGameRestart" />
     </template>
 
-    <!-- Menu Button (lobby only; in-game button is inside GameBoard) -->
-    <button v-if="controller.phase.value === 'lobby'" class="menu-btn menu-btn--lobby" @click="showMenu = !showMenu">Menu</button>
-
     <!-- Pause Menu -->
-    <div v-if="showMenu" class="modal-overlay" @click="showMenu = false">
+    <div v-if="showMenu && controller.phase.value !== 'lobby'" class="modal-overlay" @click="showMenu = false">
       <div class="pause-menu" @click.stop>
-        <h2 class="pause-menu__title">{{ controller.phase.value === 'lobby' ? 'Menu' : 'Paused' }}</h2>
-        <button v-if="controller.phase.value !== 'lobby'" class="pause-menu__btn pause-menu__btn--resume" @click="showMenu = false">Resume</button>
-        <label v-if="controller.phase.value !== 'lobby'" class="pause-menu__toggle">
+        <h2 class="pause-menu__title">Paused</h2>
+        <button class="pause-menu__btn pause-menu__btn--resume" @click="showMenu = false">Resume</button>
+        <button class="pause-menu__btn pause-menu__btn--tutorial" @click="showMenu = false; showTutorial = true">How to Play</button>
+        <button class="pause-menu__btn pause-menu__btn--rules" @click="showMenu = false; showRules = true">Game Info</button>
+        <label class="pause-menu__toggle">
           <input type="checkbox" :checked="controller.instantCpu.value" @change="controller.setInstantCpu(($event.target as HTMLInputElement).checked)">
           <span class="toggle-check"></span>
-          <span>Make CPU players instant</span>
+          <span>Make computer players instant</span>
         </label>
-        <button class="pause-menu__btn pause-menu__btn--rules" @click="showMenu = false; showRules = true">Game Info</button>
         <a class="pause-menu__btn pause-menu__btn--feedback" href="mailto:uno@u9g.dev?subject=I%20have%20advice">Give Feedback</a>
-        <button v-if="controller.phase.value !== 'lobby'" class="pause-menu__btn pause-menu__btn--new-game" @click="newGameRestart">New Game</button>
+        <button class="pause-menu__btn pause-menu__btn--new-game" @click="newGameRestart">New Game</button>
       </div>
     </div>
 
@@ -224,6 +227,9 @@ function renderMarkdown(md: string): string {
         <div class="rules-modal__body" v-html="renderMarkdown(rulesContent)"></div>
       </div>
     </div>
+
+    <!-- Tutorial -->
+    <TutorialOverlay v-if="showTutorial" @close="showTutorial = false" />
 
     <!-- UNO Penalty Popup -->
     <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">

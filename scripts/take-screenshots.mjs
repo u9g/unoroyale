@@ -228,6 +228,52 @@ const SCENARIOS = [
 ];
 
 // ---------------------------------------------------------------------------
+// Tutorial steps
+// ---------------------------------------------------------------------------
+
+const TUTORIAL_STEPS = [
+  { name: '04-tutorial-1-the-goal',         step: 0 },
+  { name: '05-tutorial-2-matching-cards',    step: 1 },
+  { name: '06-tutorial-3-drawing-cards',     step: 2 },
+  { name: '07-tutorial-4-action-cards',      step: 3 },
+  { name: '08-tutorial-5-wild-cards',        step: 4 },
+  { name: '09-tutorial-6-choosing-a-color',  step: 5 },
+  { name: '10-tutorial-7-calling-uno',       step: 6 },
+  { name: '11-tutorial-8-youre-ready',       step: 7 },
+];
+
+/** Open tutorial and advance to the given step index. */
+async function openTutorialStep(page, stepIndex) {
+  // Open tutorial
+  await page.evaluate(() => {
+    const app = window.__app;
+    if (!app) throw new Error('window.__app not found');
+    app.showTutorial.value = true;
+  });
+
+  await page.waitForSelector('.tutorial');
+
+  // Click Next to reach the desired step
+  for (let i = 0; i < stepIndex; i++) {
+    await page.click('.tutorial__btn--next');
+  }
+
+  // Wait for transition to settle
+  await page.evaluate(() => new Promise(resolve =>
+    requestAnimationFrame(() => requestAnimationFrame(resolve))
+  ));
+}
+
+/** Close tutorial so page is clean for next screenshot. */
+async function closeTutorial(page) {
+  await page.evaluate(() => {
+    const app = window.__app;
+    if (app) app.showTutorial.value = false;
+  });
+  await page.waitForSelector('.tutorial', { state: 'detached', timeout: 3000 }).catch(() => {});
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -254,6 +300,22 @@ async function main() {
         hasTouch: true,
       });
 
+      // Homescreen screenshot
+      {
+        const page = await context.newPage();
+        try {
+          await loadApp(page);
+          await disableAnimations(page);
+          await page.fill('.lobby__input', PLAYER_NAME);
+          await page.screenshot({ path: path.join(dir, '00-homescreen.jpg'), type: 'jpeg', quality: 90 });
+          console.log(`  ${device.name}/00-homescreen.jpg`);
+        } catch (err) {
+          console.error(`  ERROR ${device.name}/00-homescreen: ${err.message}`);
+        } finally {
+          await page.close();
+        }
+      }
+
       for (const scenario of SCENARIOS) {
         const page = await context.newPage();
         try {
@@ -263,6 +325,25 @@ async function main() {
           console.log(`  ${device.name}/${scenario.name}.jpg`);
         } catch (err) {
           console.error(`  ERROR ${device.name}/${scenario.name}: ${err.message}`);
+        } finally {
+          await page.close();
+        }
+      }
+
+      // Tutorial screenshots — reuse a single page, navigate steps
+      {
+        const page = await context.newPage();
+        try {
+          await loadApp(page);
+          await disableAnimations(page);
+          for (const tutStep of TUTORIAL_STEPS) {
+            await openTutorialStep(page, tutStep.step);
+            await page.screenshot({ path: path.join(dir, `${tutStep.name}.jpg`), type: 'jpeg', quality: 90 });
+            console.log(`  ${device.name}/${tutStep.name}.jpg`);
+            await closeTutorial(page);
+          }
+        } catch (err) {
+          console.error(`  ERROR ${device.name}/tutorial: ${err.message}`);
         } finally {
           await page.close();
         }
