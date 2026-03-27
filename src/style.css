@@ -899,20 +899,14 @@ body {
 }
 
 .rules-modal__expand {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #fff;
-  border-radius: 1px;
   background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
   cursor: pointer;
   opacity: 0.6;
   transition: opacity 0.15s;
-  padding: 0;
-}
-
-.rules-modal__expand--active {
-  border-radius: 1px;
-  box-shadow: 3px -3px 0 -1px #1e293b, 3px -3px 0 0.5px rgba(255,255,255,0.6);
+  line-height: 1;
 }
 
 .rules-modal__expand:hover {

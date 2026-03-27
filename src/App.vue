@@ -217,7 +217,7 @@ function renderMarkdown(md: string): string {
         <div class="rules-modal__header">
           <h2>Game Info</h2>
           <div class="rules-modal__actions">
-            <button :class="['rules-modal__expand', rulesExpanded && 'rules-modal__expand--active']" @click="rulesExpanded = !rulesExpanded"></button>
+            <button class="rules-modal__expand" @click="rulesExpanded = !rulesExpanded">{{ rulesExpanded ? '−' : '+' }}</button>
             <button class="rules-modal__close" @click="showRules = false; rulesExpanded = false">&times;</button>
           </div>
         </div>
