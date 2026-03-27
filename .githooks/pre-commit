@@ -42,3 +42,13 @@ if [ $exit_code -ne 0 ]; then
   exit 1
 fi
 echo "All engine tests passed."
+
+# Generate screenshots
+echo "Generating screenshots..."
+node scripts/take-screenshots.mjs 2>&1
+if [ $? -ne 0 ]; then
+  echo "Screenshot generation failed! Commit aborted."
+  exit 1
+fi
+git add screenshots/
+echo "Screenshots generated and staged."

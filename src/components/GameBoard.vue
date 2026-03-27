@@ -680,7 +680,7 @@ function onDrop(e: DragEvent) {
 
   <div :class="['game-table', `game-table--${gameState.direction}`]">
     <!-- Direction arrow -->
-    <svg class="direction-arrow" id="direction-arrow" :data-direction="gameState.direction" :data-from="arrowFrom" :data-to="arrowTo">
+    <svg v-if="gameState.phase !== 'game_over'" class="direction-arrow" id="direction-arrow" :data-direction="gameState.direction" :data-from="arrowFrom" :data-to="arrowTo">
       <defs>
         <marker id="arrowhead" markerWidth="32" markerHeight="28" refX="32" refY="14" orient="auto" markerUnits="userSpaceOnUse">
           <polygon points="0 0, 32 14, 0 28" fill="white" opacity="0.35" />
@@ -752,7 +752,7 @@ function onDrop(e: DragEvent) {
       <div :class="['human-hand', isHumanTurn && 'human-hand--active']">
         <div v-if="isHumanTurn" class="your-turn-indicator">It's your turn!</div>
         <div class="human-hand__label">
-          <span class="human-hand__name">{{ human.name }}</span>
+          <span v-if="gameState.phase !== 'game_over'" class="human-hand__name">{{ human.name }}</span>
           <button v-if="showUnoBtn" class="uno-btn" @click="emit('sayUno')">UNO!</button>
         </div>
         <div
