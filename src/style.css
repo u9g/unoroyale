@@ -397,7 +397,7 @@ body {
   padding: 0.25rem 0.75rem;
   border-radius: 6px;
   border: none;
-  background: rgba(0,0,0,0.2);
+  background: none;
   font-size: 0.75rem;
   transition: background 0.3s, border-color 0.3s;
   z-index: 2;
@@ -763,7 +763,7 @@ body {
   position: fixed;
   bottom: 50%;
   left: 50%;
-  transform: translate(-50%, 5.5rem);
+  transform: translate(-50%, 6.5rem);
   padding: 0.4rem 1rem;
   border-radius: 6px;
   border: 1px solid rgba(255,255,255,0.3);
