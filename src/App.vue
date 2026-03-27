@@ -141,7 +141,6 @@ function renderMarkdown(md: string): string {
             type="text"
             placeholder="Enter your name"
             class="lobby__input"
-            autofocus
             required
           />
           <button type="submit" class="lobby__btn">Start Game</button>
