@@ -2,7 +2,7 @@
 
 ## Overview
 
-UNO Royale is a 4-player card game: you against 3 AI opponents (CPU West, CPU North, CPU East). The goal is to be the first player to empty your hand.
+UNO Royale is a 4-player card game: you against 3 AI opponents with random names, seated at the West, North, and East positions. The goal is to be the first player to empty your hand.
 
 ## The Deck
 
@@ -31,8 +31,8 @@ The deck has 108 cards:
 
 ## Turn Direction
 
-- The default turn direction is **counter-clockwise**: You -> CPU East -> CPU North -> CPU West
-- A **Reverse** card flips the direction to clockwise: You -> CPU West -> CPU North -> CPU East
+- The default turn direction is **counter-clockwise**: You -> East -> North -> West
+- A **Reverse** card flips the direction to clockwise: You -> West -> North -> East
 - The current direction is shown by an arrow on the game board connecting the current player to the next
 
 ## Playing a Card
@@ -73,11 +73,11 @@ AI players call UNO automatically when they have 2 cards.
 
 ## Winning
 
-The first player to play all their cards wins the game (provided they called UNO). A game over screen appears with the option to play again.
+The first player to play all their cards wins the game (provided they called UNO). If you win with a Wild or Wild Draw Four, the color chooser is skipped automatically. A game over screen appears with the option to play again.
 
 ## Recent Plays
 
-The last 4 cards played are shown above the draw and discard piles, along with the name of the player who played each one.
+The Card Play History above the draw and discard piles shows the last 4 cards played.
 
 ## Hand Management
 
