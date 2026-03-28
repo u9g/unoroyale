@@ -351,6 +351,29 @@ async function main() {
 
       await context.close();
     }));
+
+    // Google Play feature graphic (1024x500 PNG)
+    {
+      const context = await browser.newContext({
+        viewport: { width: 1024, height: 500 },
+        deviceScaleFactor: 1,
+        isMobile: false,
+        hasTouch: false,
+      });
+      const page = await context.newPage();
+      try {
+        await loadApp(page);
+        await disableAnimations(page);
+        await injectState(page, SCENARIOS[0].state, SCENARIOS[0].opts);
+        await page.screenshot({ path: path.join(OUTPUT, 'feature-graphic.png'), type: 'png' });
+        console.log('  feature-graphic.png');
+      } catch (err) {
+        console.error(`  ERROR feature-graphic: ${err.message}`);
+      } finally {
+        await page.close();
+        await context.close();
+      }
+    }
   } finally {
     await browser.close();
     await server.close();
