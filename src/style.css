@@ -3,23 +3,23 @@
    ======================================== */
 
 :root {
-  --card-w: 70px;
-  --card-h: 100px;
-  --card-font: 1.5rem;
+  --card-w: 7vw;
+  --card-h: 10vw;
+  --card-font: clamp(0.9rem, 1.5vw, 1.5rem);
   --card-border: 2.5px;
   --card-radius: 10px;
 
-  --card-sm-w: 45px;
-  --card-sm-h: 65px;
-  --card-sm-font: 0.7rem;
+  --card-sm-w: 4.5vw;
+  --card-sm-h: 6.5vw;
+  --card-sm-font: clamp(0.45rem, 0.7vw, 0.7rem);
 
-  --card-lg-w: 90px;
-  --card-lg-h: 130px;
-  --card-lg-font: 2rem;
+  --card-lg-w: 9vw;
+  --card-lg-h: 13vw;
+  --card-lg-font: clamp(1.3rem, 2vw, 2rem);
 
-  --hand-overlap: 6px;
-  --ai-overlap-h: -25px;
-  --ai-overlap-v: -45px;
+  --hand-overlap: 0.6vw;
+  --ai-overlap-h: -2.5vw;
+  --ai-overlap-v: -4.5vw;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -1316,23 +1316,23 @@ body {
 /* ---- Tablet Sizes (641px – 1100px) ---- */
 @media (641px <= width <= 1100px) {
   :root {
-    --card-w: 80px;
-    --card-h: 115px;
-    --card-font: 1.7rem;
+    --card-w: 8vw;
+    --card-h: 11.5vw;
+    --card-font: clamp(1.1rem, 1.7vw, 1.7rem);
     --card-border: 3px;
     --card-radius: 12px;
 
-    --card-sm-w: 52px;
-    --card-sm-h: 75px;
-    --card-sm-font: 0.8rem;
+    --card-sm-w: 5.2vw;
+    --card-sm-h: 7.5vw;
+    --card-sm-font: clamp(0.5rem, 0.8vw, 0.8rem);
 
-    --card-lg-w: 105px;
-    --card-lg-h: 152px;
-    --card-lg-font: 2.3rem;
+    --card-lg-w: 10.5vw;
+    --card-lg-h: 15.2vw;
+    --card-lg-font: clamp(1.5rem, 2.3vw, 2.3rem);
 
-    --hand-overlap: 8px;
-    --ai-overlap-h: -30px;
-    --ai-overlap-v: -45px;
+    --hand-overlap: 0.8vw;
+    --ai-overlap-h: -3vw;
+    --ai-overlap-v: -4.5vw;
   }
 
   .your-turn-indicator {
@@ -1418,23 +1418,23 @@ body {
 /* ---- Phone Sizes (≤ 640px) ---- */
 @media (width <= 640px) {
   :root {
-    --card-w: 52px;
-    --card-h: 75px;
-    --card-font: 1.1rem;
+    --card-w: 13vw;
+    --card-h: 18.75vw;
+    --card-font: clamp(0.85rem, 2.75vw, 1.1rem);
     --card-border: 2px;
     --card-radius: 8px;
 
-    --card-sm-w: 32px;
-    --card-sm-h: 46px;
-    --card-sm-font: 0.5rem;
+    --card-sm-w: 8vw;
+    --card-sm-h: 11.5vw;
+    --card-sm-font: clamp(0.4rem, 1.25vw, 0.5rem);
 
-    --card-lg-w: 65px;
-    --card-lg-h: 94px;
-    --card-lg-font: 1.5rem;
+    --card-lg-w: 16.25vw;
+    --card-lg-h: 23.5vw;
+    --card-lg-font: clamp(1rem, 3.75vw, 1.5rem);
 
-    --hand-overlap: 2px;
-    --ai-overlap-h: -18px;
-    --ai-overlap-v: -30px;
+    --hand-overlap: 0.5vw;
+    --ai-overlap-h: -4.5vw;
+    --ai-overlap-v: -7.5vw;
   }
 
   .top-bar__title {
@@ -1532,23 +1532,23 @@ body {
 /* ---- Landscape Phone Layout ---- */
 @media (orientation: landscape) and (height <= 500px) {
   :root {
-    --card-w: 48px;
-    --card-h: 69px;
-    --card-font: 1rem;
+    --card-w: 5.5vw;
+    --card-h: 8vw;
+    --card-font: clamp(0.75rem, 1.15vw, 1rem);
     --card-border: 2px;
     --card-radius: 7px;
 
-    --card-sm-w: 28px;
-    --card-sm-h: 40px;
-    --card-sm-font: 0.45rem;
+    --card-sm-w: 3.2vw;
+    --card-sm-h: 4.6vw;
+    --card-sm-font: clamp(0.35rem, 0.52vw, 0.45rem);
 
-    --card-lg-w: 55px;
-    --card-lg-h: 80px;
-    --card-lg-font: 1.3rem;
+    --card-lg-w: 6.3vw;
+    --card-lg-h: 9.2vw;
+    --card-lg-font: clamp(1rem, 1.5vw, 1.3rem);
 
-    --hand-overlap: 2px;
-    --ai-overlap-h: -14px;
-    --ai-overlap-v: -26px;
+    --hand-overlap: 0.25vw;
+    --ai-overlap-h: -1.6vw;
+    --ai-overlap-v: -3vw;
   }
 
   /* Override compact stacked layout back to 3-column desktop-style grid */
