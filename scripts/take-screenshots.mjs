@@ -365,6 +365,55 @@ async function main() {
         await loadApp(page);
         await disableAnimations(page);
         await injectState(page, SCENARIOS[0].state, SCENARIOS[0].opts);
+
+        // Hide HUD elements and add promotional overlay
+        await page.addStyleTag({
+          content: `
+            .top-bar, .human-hand__info, .status-bar, #direction-arrow { display: none !important; }
+            .game-table { filter: blur(2px) brightness(0.55); }
+          `,
+        });
+
+        await page.evaluate(() => {
+          const overlay = document.createElement('div');
+          overlay.innerHTML = `
+            <div style="
+              position: fixed; inset: 0; z-index: 9999;
+              display: flex; flex-direction: column;
+              align-items: center; justify-content: center;
+              text-align: center; gap: 12px;
+            ">
+              <div style="
+                font-size: 72px; font-weight: 900;
+                text-transform: uppercase; letter-spacing: 0.08em;
+                background: linear-gradient(135deg, #ef4444 25%, #3b82f6 25%, #3b82f6 50%, #22c55e 50%, #22c55e 75%, #eab308 75%);
+                -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+                background-clip: text;
+                filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+              ">UNO Royale</div>
+              <div style="
+                font-size: 22px; font-weight: 600;
+                color: rgba(255,255,255,0.9);
+                letter-spacing: 0.15em; text-transform: uppercase;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+              ">Outsmart 3 AI opponents</div>
+              <div style="
+                margin-top: 8px;
+                display: flex; gap: 16px;
+              ">
+                ${['#ef4444','#3b82f6','#22c55e','#eab308'].map(c =>
+                  `<div style="width:12px;height:12px;border-radius:50%;background:${c};box-shadow:0 0 8px ${c};"></div>`
+                ).join('')}
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+        });
+
+        await page.evaluate(() => new Promise(resolve =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve))
+        ));
+
         await page.screenshot({ path: path.join(OUTPUT, 'feature-graphic.png'), type: 'png' });
         console.log('  feature-graphic.png');
       } catch (err) {
