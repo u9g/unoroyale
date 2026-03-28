@@ -60,6 +60,12 @@ else
   git add screenshots/
 fi
 
+# Regenerate logo PNG if logo.svg changed
+if git diff --cached --name-only | grep -q 'public/logo.svg'; then
+  sh scripts/logo-png.sh
+  git add logo-512.png
+fi
+
 rm -rf "$tmpdir"
 
 if [ "$failed" != "0" ]; then
