@@ -1,5 +1,19 @@
 # Uno Royale
 
+### Gameplay across screen sizes
+
+| Desktop |
+| --- |
+| ![Desktop gameplay](screenshots/Desktop/01-gameplay.jpg) |
+
+| iPad | iPad (Landscape) |
+| --- | --- |
+| ![iPad gameplay](screenshots/iPad/01-gameplay.jpg) | ![iPad landscape gameplay](screenshots/iPad-Landscape/01-gameplay.jpg) |
+
+| iPhone | iPhone (Landscape) |
+| --- | --- |
+| ![iPhone gameplay](screenshots/iPhone/01-gameplay.jpg) | ![iPhone landscape gameplay](screenshots/iPhone-Landscape/01-gameplay.jpg) |
+
 A single-player UNO card game built with Vue 3, TypeScript, and Vite. Play against three AI opponents with full UNO rules including Draw Two, Skip, Reverse, Wild, and Wild Draw Four cards.
 
 ## Features
