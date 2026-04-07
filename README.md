@@ -2,7 +2,7 @@
   <img src="public/logo.svg" alt="Uno Royale logo" width="200" />
 </p>
 
-# Uno Royale
+<h1 align="center">Uno Royale</h1>
 
 | Desktop |
 | --- |
