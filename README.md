@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/logo.svg" alt="Uno Royale logo" width="200" />
+</p>
+
 # Uno Royale
 
 | Desktop |
