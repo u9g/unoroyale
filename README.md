@@ -1,7 +1,5 @@
 # Uno Royale
 
-### Gameplay across screen sizes
-
 | Desktop |
 | --- |
 | ![Desktop gameplay](screenshots/Desktop/01-gameplay.jpg) |
