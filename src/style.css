@@ -284,11 +284,24 @@ body {
   background: #dc2626;
 }
 
-.feedback-slide-enter-active {
+.feedback-enter-active,
+.feedback-leave-active {
+  animation: none;
+  transition: opacity 0.3s;
+}
+
+.feedback-enter-active .feedback-sheet,
+.feedback-leave-active .feedback-sheet {
   transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.feedback-slide-enter-from {
+.feedback-enter-from,
+.feedback-leave-to {
+  opacity: 0;
+}
+
+.feedback-enter-from .feedback-sheet,
+.feedback-leave-to .feedback-sheet {
   transform: translateY(100%);
 }
 

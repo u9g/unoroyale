@@ -4,6 +4,7 @@ import { STATS_URL } from '../stats'
 
 const emit = defineEmits<{ close: [] }>()
 
+const visible = ref(true)
 const message = ref('')
 const email = ref('')
 const state = ref<'idle' | 'sending' | 'sent' | 'error'>('idle')
@@ -29,14 +30,14 @@ async function submit() {
 </script>
 
 <template>
-  <div class="modal-overlay feedback-overlay" @click="emit('close')">
-    <Transition name="feedback-slide" appear>
+  <Transition name="feedback" appear @after-leave="emit('close')">
+    <div v-if="visible" class="modal-overlay feedback-overlay" @click="visible = false">
       <form class="feedback-sheet" @click.stop @submit.prevent="submit">
         <div class="feedback-sheet__handle" />
         <template v-if="state === 'sent'">
           <h2 class="feedback-sheet__title">Thanks!</h2>
           <p class="feedback-sheet__text">Your feedback is on its way.</p>
-          <button type="button" class="feedback-sheet__btn" @click="emit('close')">Done</button>
+          <button type="button" class="feedback-sheet__btn" @click="visible = false">Done</button>
         </template>
         <template v-else>
           <h2 class="feedback-sheet__title">Give Feedback</h2>
@@ -63,6 +64,6 @@ async function submit() {
           </button>
         </template>
       </form>
-    </Transition>
-  </div>
+    </div>
+  </Transition>
 </template>
