@@ -9,7 +9,7 @@ import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
 import FeedbackSheet from './components/FeedbackSheet.vue'
-import { useShake } from './shake'
+import { useTiltDown } from './tiltDown'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
@@ -25,7 +25,7 @@ const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
 const showTutorial = ref(false)
 const showFeedback = ref(false)
-useShake(() => { showFeedback.value = true })
+useTiltDown(() => { showFeedback.value = true })
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
