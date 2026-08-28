@@ -74,6 +74,13 @@ function cancelColor() {
   choosingColor.value = false
 }
 
+function quitToLobby() {
+  showMenu.value = false
+  choosingColor.value = false
+  pendingWildIndex = null
+  controller.quitToLobby()
+}
+
 function newGameRestart() {
   showMenu.value = false
   choosingColor.value = false
@@ -212,7 +219,7 @@ function renderMarkdown(md: string): string {
         <h2 class="pause-menu__title">Paused</h2>
         <button class="pause-menu__btn pause-menu__btn--resume" @click="showMenu = false">Resume</button>
         <button class="pause-menu__btn pause-menu__btn--tutorial" @click="showMenu = false; showTutorial = true">How to Play</button>
-        <button class="pause-menu__btn pause-menu__btn--rules" @click="showMenu = false; showRules = true">Game Info</button>
+        <button class="pause-menu__btn pause-menu__btn--main-menu" @click="quitToLobby">Main Menu</button>
         <label class="pause-menu__toggle">
           <input type="checkbox" :checked="controller.instantCpu.value" @change="controller.setInstantCpu(($event.target as HTMLInputElement).checked)">
           <span class="toggle-check"></span>

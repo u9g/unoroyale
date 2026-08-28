@@ -899,13 +899,13 @@ body {
 
 .pause-menu__btn--resume { background: rgba(255,255,255,0.15); }
 .pause-menu__btn--feedback { background: rgba(255,255,255,0.15); }
-.pause-menu__btn--rules { background: rgba(255,255,255,0.15); }
+.pause-menu__btn--main-menu { background: rgba(255,255,255,0.15); }
 
 @media (hover: hover) {
   .pause-menu__btn:hover { transform: scale(1.05); }
   .pause-menu__btn--resume:hover { background: rgba(255,255,255,0.25); }
   .pause-menu__btn--feedback:hover { background: rgba(255,255,255,0.25); }
-  .pause-menu__btn--rules:hover { background: rgba(255,255,255,0.25); }
+  .pause-menu__btn--main-menu:hover { background: rgba(255,255,255,0.25); }
 }
 
 .pause-menu__toggle {

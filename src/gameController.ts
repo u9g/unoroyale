@@ -28,6 +28,12 @@ export function useGameController() {
     maybeScheduleAiTurn(state)
   }
 
+  function quitToLobby() {
+    if (aiTimer) clearTimeout(aiTimer)
+    gameState.value = null
+    phase.value = 'lobby'
+  }
+
   function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
     const state = Game.newGame(playerName.value, playerCount.value)
@@ -177,6 +183,7 @@ export function useGameController() {
     playerName,
     startGame,
     restartGame,
+    quitToLobby,
     playCard: playCardAction,
     drawCard: drawCardAction,
     sayUno: sayUnoAction,
