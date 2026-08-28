@@ -4,7 +4,7 @@ import { onMounted, onUnmounted } from 'vue'
 const SHAKE_THRESHOLD = 20
 const COOLDOWN_MS = 1500
 
-type MotionPermission = { requestPermission?: () => Promise<'granted' | 'denied'> }
+type MotionPermission = typeof DeviceMotionEvent & { requestPermission?: () => Promise<'granted' | 'denied'> }
 
 export function useShake(onShake: () => void) {
   let lastShake = 0
@@ -21,10 +21,11 @@ export function useShake(onShake: () => void) {
 
   // iOS only hands out motion events after requestPermission() from a user gesture
   async function requestOnFirstGesture() {
-    const request = (DeviceMotionEvent as unknown as MotionPermission).requestPermission
-    if (!request) return
+    const MotionEvent = DeviceMotionEvent as MotionPermission
+    if (!MotionEvent.requestPermission) return
     try {
-      await request()
+      // Must be invoked on the class: WebKit rejects a detached call
+      await MotionEvent.requestPermission()
     } catch {
       // Denied or unavailable: shake-to-feedback simply stays off
     }
