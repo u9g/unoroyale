@@ -37,10 +37,7 @@ function calcArrowPositions(): ArrowPositions | null {
 
   const getPlayerCards = (idx: number): HTMLElement | null => {
     if (idx === 0) return table.querySelector('.human-hand__cards')
-    if (idx === 1) return table.querySelector('.game-table__left .ai-hand__cards')
-    if (idx === 2) return table.querySelector('.game-table__top .ai-hand__cards')
-    if (idx === 3) return table.querySelector('.game-table__right .ai-hand__cards')
-    return null
+    return table.querySelector(`[data-player="${idx}"] .ai-hand__cards`)
   }
 
   interface EdgePoint {
@@ -90,32 +87,22 @@ function calcArrowPositions(): ArrowPositions | null {
     const cards = container.querySelectorAll('.card')
     if (cards.length === 0) return null
 
-    if (idx === 0) {
-      const faceRight = toward === 3 || toward === 2
+    const seat = seatOfPlayer(idx)
+    const towardSeat = seatOfPlayer(toward)
+
+    if (seat === 'bottom' || seat === 'top') {
+      const faceRight = towardSeat === 'right' || (seat === 'bottom' ? towardSeat === 'top' : towardSeat === 'bottom')
       const card = faceRight ? cards[cards.length - 1] : cards[0]
       const r = card.getBoundingClientRect()
       return { x: faceRight ? r.right - tableRect.left + gap : r.left - tableRect.left - gap, y: r.top - tableRect.top + r.height / 2 }
-    } else if (idx === 1) {
-      const hand = container.closest('.ai-hand')!
-      const label = hand.querySelector('.ai-hand__label')
-      const faceUp = toward === 2
-      if (faceUp && label) { const lr = label.getBoundingClientRect(); return { x: lr.left - tableRect.left + lr.width / 2, y: lr.top - tableRect.top - gap } }
-      const hr = hand.getBoundingClientRect()
-      return { x: hr.left - tableRect.left + hr.width / 2, y: hr.bottom - tableRect.top + gap }
-    } else if (idx === 2) {
-      const faceRight = toward === 3 || toward === 0
-      const card = faceRight ? cards[cards.length - 1] : cards[0]
-      const r = card.getBoundingClientRect()
-      return { x: faceRight ? r.right - tableRect.left + gap : r.left - tableRect.left - gap, y: r.top - tableRect.top + r.height / 2 }
-    } else if (idx === 3) {
-      const hand = container.closest('.ai-hand')!
-      const label = hand.querySelector('.ai-hand__label')
-      const faceUp = toward === 2
-      if (faceUp && label) { const lr = label.getBoundingClientRect(); return { x: lr.left - tableRect.left + lr.width / 2, y: lr.top - tableRect.top - gap } }
-      const hr = hand.getBoundingClientRect()
-      return { x: hr.left - tableRect.left + hr.width / 2, y: hr.bottom - tableRect.top + gap }
     }
-    return null
+
+    const hand = container.closest('.ai-hand')!
+    const label = hand.querySelector('.ai-hand__label')
+    const faceUp = towardSeat === 'top'
+    if (faceUp && label) { const lr = label.getBoundingClientRect(); return { x: lr.left - tableRect.left + lr.width / 2, y: lr.top - tableRect.top - gap } }
+    const hr = hand.getBoundingClientRect()
+    return { x: hr.left - tableRect.left + hr.width / 2, y: hr.bottom - tableRect.top + gap }
   }
 
   const getEdgePoint = isCompact ? getMobileEdgePoint : getDesktopEdgePoint
@@ -128,9 +115,9 @@ function calcArrowPositions(): ArrowPositions | null {
   if (start._humanArc || end._humanArc) {
     const arcRight = start._arcRight || end._arcRight
     cpX = arcRight ? tableRect.width - edgePad : edgePad
-    const humanY = from === 0 ? start.y : end.y
-    const midY = (start.y + end.y) / 2
-    cpY = humanY * 0.85 + midY * 0.15
+    // Arc centre sits level with the piles so the curve passes beside them, not across a corner
+    const pile = table.querySelector('.draw-pile')?.getBoundingClientRect()
+    cpY = pile ? pile.top - tableRect.top + pile.height / 2 : (start.y + end.y) / 2
   } else if (start._sameRow) {
     const midX = (start.x + end.x) / 2
     const spread = Math.abs(end.x - start.x)
@@ -251,11 +238,7 @@ function findDiscardSource(targetEl: HTMLElement): DOMRect | null {
 
   if (lastPlayer < 1) return null
 
-  let handEl: HTMLElement | null = null
-  if (lastPlayer === 1) handEl = table.querySelector('.game-table__left .ai-hand__cards')
-  else if (lastPlayer === 2) handEl = table.querySelector('.game-table__top .ai-hand__cards')
-  else if (lastPlayer === 3) handEl = table.querySelector('.game-table__right .ai-hand__cards')
-
+  const handEl = table.querySelector(`[data-player="${lastPlayer}"] .ai-hand__cards`)
   if (!handEl) return null
   const cards = handEl.querySelectorAll('.card')
   if (cards.length === 0) return null
@@ -507,9 +490,19 @@ const nextFromHuman = computed(() =>
 const arrowFrom = computed(() => props.gameState.currentPlayer)
 const arrowTo = computed(() => nextPlayerIndex(props.gameState))
 
-const aiWest = computed(() => props.gameState.players[1])
-const aiNorth = computed(() => props.gameState.players[2])
-const aiEast = computed(() => props.gameState.players[3])
+type Seat = 'top' | 'left' | 'right'
+// AI player indices (1..n-1) by seat; 2 players faces you, 3 players flank you
+const SEATS_BY_COUNT: Record<number, Partial<Record<Seat, number>>> = {
+  2: { top: 1 },
+  3: { left: 1, right: 2 },
+  4: { left: 1, top: 2, right: 3 },
+}
+const seats = computed(() => SEATS_BY_COUNT[props.gameState.players.length] ?? SEATS_BY_COUNT[4])
+
+function seatOfPlayer(idx: number): Seat | 'bottom' {
+  if (idx === 0) return 'bottom'
+  return (Object.keys(seats.value) as Seat[]).find(seat => seats.value[seat] === idx) ?? 'top'
+}
 
 const lastPlayerIndex = computed(() => {
   const rp = props.gameState.recentPlays
@@ -695,22 +688,24 @@ function onDrop(e: DragEvent) {
     </svg>
 
     <!-- AI North (top) -->
-    <div class="game-table__top">
+    <div class="game-table__top" :data-player="seats.top">
       <AiHand
-        :player="aiNorth"
+        v-if="seats.top != null"
+        :player="gameState.players[seats.top]"
         position="top"
-        :is-current="gameState.currentPlayer === 2"
-        :is-target="nextFromHuman === 2"
+        :is-current="gameState.currentPlayer === seats.top"
+        :is-target="nextFromHuman === seats.top"
       />
     </div>
 
     <!-- AI West (left) -->
-    <div class="game-table__left">
+    <div class="game-table__left" :data-player="seats.left">
       <AiHand
-        :player="aiWest"
+        v-if="seats.left != null"
+        :player="gameState.players[seats.left]"
         position="left"
-        :is-current="gameState.currentPlayer === 1"
-        :is-target="nextFromHuman === 1"
+        :is-current="gameState.currentPlayer === seats.left"
+        :is-target="nextFromHuman === seats.left"
       />
     </div>
 
@@ -743,12 +738,13 @@ function onDrop(e: DragEvent) {
     </div>
 
     <!-- AI East (right) -->
-    <div class="game-table__right">
+    <div class="game-table__right" :data-player="seats.right">
       <AiHand
-        :player="aiEast"
+        v-if="seats.right != null"
+        :player="gameState.players[seats.right]"
         position="right"
-        :is-current="gameState.currentPlayer === 3"
-        :is-target="nextFromHuman === 3"
+        :is-current="gameState.currentPlayer === seats.right"
+        :is-target="nextFromHuman === seats.right"
       />
     </div>
 

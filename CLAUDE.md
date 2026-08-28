@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-UNO Royale — a Vue 3 + TypeScript UNO card game with 3 AI opponents, wrapped as an iOS app via Capacitor. Fully offline-capable with bundled assets.
+UNO Royale — a Vue 3 + TypeScript UNO card game with 1–3 AI opponents, wrapped as an iOS app via Capacitor. Fully offline-capable with bundled assets.
 
 ## Commands
 

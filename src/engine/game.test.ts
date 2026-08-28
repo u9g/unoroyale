@@ -14,6 +14,15 @@ describe('newGame', () => {
     expect(state.players.slice(1).every(p => p.type === 'ai')).toBe(true)
   })
 
+  it('creates the requested number of players with sequential ids', () => {
+    for (const count of [2, 3, 4]) {
+      const state = newGame('Alice', count)
+      expect(state.players.length).toBe(count)
+      expect(state.players.map(p => p.id)).toEqual([...Array(count).keys()])
+      expect(state.players.slice(1).every(p => p.type === 'ai')).toBe(true)
+    }
+  })
+
   it('gives AI players random names from the name list', () => {
     const state = newGame('Alice')
     const aiNames = state.players.slice(1).map(p => p.name)

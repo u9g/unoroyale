@@ -2,7 +2,7 @@
 
 ## Overview
 
-UNO Royale is a 4-player card game: you against 3 AI opponents with random names, seated at the West, North, and East positions. The goal is to be the first player to empty your hand.
+UNO Royale is a 2- to 4-player card game: you against 1–3 AI opponents with random names, seated across from you (2 players), to your left and right (3 players), or at West, North, and East (4 players). The goal is to be the first player to empty your hand.
 
 ## The Deck
 
@@ -93,7 +93,7 @@ Draw Two and Wild Draw Four cards **cannot** be stacked. When a +2 or +4 is play
 
 ## AI Behavior
 
-The 3 AI opponents play with a simple strategy:
+The AI opponents play with a simple strategy:
 
 - They prioritize **Draw Two** (highest), then **Skip**, then **high number cards**, then **Reverse**
 - They save **Wild** and **Wild Draw Four** cards for last (lowest priority)

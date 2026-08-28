@@ -15,12 +15,14 @@ export function useGameController() {
   const gameState = ref<GameState | null>(null)
   const phase = ref<'lobby' | 'playing' | 'game_over'>('lobby')
   const playerName = ref('')
+  const playerCount = ref(Game.MAX_PLAYERS)
   const instantCpu = ref(localStorage.getItem('uno_instant_cpu') === 'true')
   let aiTimer: ReturnType<typeof setTimeout> | null = null
 
-  function startGame(name: string) {
+  function startGame(name: string, count: number) {
     playerName.value = name
-    const state = Game.newGame(name)
+    playerCount.value = count
+    const state = Game.newGame(name, count)
     gameState.value = state
     phase.value = 'playing'
     maybeScheduleAiTurn(state)
@@ -28,7 +30,7 @@ export function useGameController() {
 
   function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
-    const state = Game.newGame(playerName.value)
+    const state = Game.newGame(playerName.value, playerCount.value)
     gameState.value = state
     phase.value = 'playing'
     maybeScheduleAiTurn(state)

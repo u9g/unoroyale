@@ -142,6 +142,58 @@ body {
   color: #fff;
 }
 
+/* ---- Player count wheel ---- */
+.lobby__players {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: rgba(255,255,255,0.85);
+  font-size: 1rem;
+  font-weight: 600;
+  user-select: none;
+}
+
+.wheel {
+  --wheel-item: 40px;
+
+  position: relative;
+  height: calc(var(--wheel-item) * 3.5);
+  width: 3.25rem;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  outline: none;
+  mask-image: linear-gradient(to bottom, transparent, #000 45%, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%, #000 55%, transparent);
+}
+
+.wheel:active {
+  cursor: grabbing;
+}
+
+.wheel:focus-visible .wheel__highlight {
+  border-color: #eab308;
+}
+
+.wheel__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wheel__highlight {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: var(--wheel-item);
+  margin-top: calc(var(--wheel-item) / -2);
+  border-top: 1px solid rgba(255,255,255,0.25);
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  pointer-events: none;
+}
+
 /* ---- Top Bar ---- */
 .top-bar {
   display: flex;

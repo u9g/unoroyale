@@ -9,6 +9,8 @@ import { playable } from './rules'
 import namesCsv from '../names.csv?raw'
 
 const HAND_SIZE = 7
+export const MIN_PLAYERS = 2
+export const MAX_PLAYERS = 4
 
 const ALL_NAMES: string[] = namesCsv
   .trim()
@@ -30,15 +32,13 @@ function pickRandomNames(exclude: string, count: number): string[] {
   return picked
 }
 
-export function newGame(playerName: string): GameState {
+export function newGame(playerName: string, playerCount: number = MAX_PLAYERS): GameState {
   let deck = Deck.shuffle(Deck.newDeck())
 
-  const aiNames = pickRandomNames(playerName, 3)
+  const aiNames = pickRandomNames(playerName, playerCount - 1)
   const players: Player[] = [
     { id: 0, name: playerName, type: 'human', hand: [], saidUno: false },
-    { id: 1, name: aiNames[0], type: 'ai', hand: [], saidUno: false },
-    { id: 2, name: aiNames[1], type: 'ai', hand: [], saidUno: false },
-    { id: 3, name: aiNames[2], type: 'ai', hand: [], saidUno: false },
+    ...aiNames.map((name, i): Player => ({ id: i + 1, name, type: 'ai', hand: [], saidUno: false })),
   ]
 
   // Deal hands

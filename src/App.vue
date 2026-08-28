@@ -3,6 +3,8 @@ import { ref, onMounted, watch } from 'vue'
 import type { Color } from './engine/card'
 import { isWild } from './engine/card'
 import { useGameController } from './gameController'
+import { MIN_PLAYERS, MAX_PLAYERS } from './engine/game'
+import PlayerCountPicker from './components/PlayerCountPicker.vue'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
@@ -11,6 +13,8 @@ import rulesContent from './rules.md?raw'
 const controller = useGameController()
 
 const playerNameInput = ref('')
+const savedPlayerCount = Number(localStorage.getItem('uno_player_count'))
+const playerCountInput = ref(savedPlayerCount >= MIN_PLAYERS && savedPlayerCount <= MAX_PLAYERS ? savedPlayerCount : MAX_PLAYERS)
 const showMenu = ref(false)
 const showRules = ref(false)
 const rulesExpanded = ref(false)
@@ -34,9 +38,10 @@ onMounted(() => {
 function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
   localStorage.setItem('uno_player_name', name)
+  localStorage.setItem('uno_player_count', String(playerCountInput.value))
   isNewGame.value = true
   gameKey.value++
-  controller.startGame(name)
+  controller.startGame(name, playerCountInput.value)
 }
 
 function handlePlayCard(index: number) {
@@ -152,6 +157,10 @@ function renderMarkdown(md: string): string {
             class="lobby__input"
             required
           />
+          <label class="lobby__players">
+            <PlayerCountPicker v-model="playerCountInput" :min="MIN_PLAYERS" :max="MAX_PLAYERS" />
+            <span>players at the table</span>
+          </label>
           <button type="submit" class="lobby__btn">Start Game</button>
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>

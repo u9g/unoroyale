@@ -16,11 +16,11 @@
 | --- | --- |
 | ![iPhone gameplay](screenshots/iPhone/01-gameplay.jpg) | ![iPhone landscape gameplay](screenshots/iPhone-Landscape/01-gameplay.jpg) |
 
-A single-player UNO card game built with Vue 3, TypeScript, and Vite. Play against three AI opponents with full UNO rules including Draw Two, Skip, Reverse, Wild, and Wild Draw Four cards.
+A single-player UNO card game built with Vue 3, TypeScript, and Vite. Play against one to three AI opponents with full UNO rules including Draw Two, Skip, Reverse, Wild, and Wild Draw Four cards.
 
 ## Features
 
-- Classic UNO gameplay against 3 AI opponents
+- Classic UNO gameplay against 1–3 AI opponents (2–4 players at the table)
 - AI opponents with randomized names from popular US baby names
 - Card drag-and-drop reordering
 - UNO call mechanic with penalty for forgetting
