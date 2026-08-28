@@ -47,5 +47,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSMotionUsageDescription</key>
+	<string>Shake your phone to open the feedback form.</string>
 </dict>
 </plist>

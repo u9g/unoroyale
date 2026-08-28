@@ -34,6 +34,7 @@ export default [
         DOMRect: 'readonly',
         localStorage: 'readonly',
         fetch: 'readonly',
+        DeviceMotionEvent: 'readonly',
         navigator: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
