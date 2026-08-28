@@ -8,6 +8,7 @@ import PlayerCountPicker from './components/PlayerCountPicker.vue'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
+import FeedbackSheet from './components/FeedbackSheet.vue'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
@@ -22,6 +23,7 @@ const choosingColor = ref(false)
 const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
 const showTutorial = ref(false)
+const showFeedback = ref(false)
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
@@ -172,7 +174,7 @@ function renderMarkdown(md: string): string {
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>
-        <a class="lobby__tutorial-btn" href="mailto:uno@u9g.dev?subject=I%20have%20advice">Give Feedback</a>
+        <button type="button" class="lobby__tutorial-btn" @click="showFeedback = true">Give Feedback</button>
       </div>
     </template>
 
@@ -225,7 +227,7 @@ function renderMarkdown(md: string): string {
           <span class="toggle-check"></span>
           <span>Make computer players instant</span>
         </label>
-        <a class="pause-menu__btn pause-menu__btn--feedback" href="mailto:uno@u9g.dev?subject=I%20have%20advice">Give Feedback</a>
+        <button class="pause-menu__btn pause-menu__btn--feedback" @click="showMenu = false; showFeedback = true">Give Feedback</button>
         <button class="pause-menu__btn pause-menu__btn--new-game" @click="newGameRestart">New Game</button>
       </div>
     </div>
@@ -246,6 +248,9 @@ function renderMarkdown(md: string): string {
 
     <!-- Tutorial -->
     <TutorialOverlay v-if="showTutorial" @close="showTutorial = false" />
+
+    <!-- Feedback -->
+    <FeedbackSheet v-if="showFeedback" @close="showFeedback = false" />
 
     <!-- UNO Penalty Popup -->
     <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">

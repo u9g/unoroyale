@@ -33,6 +33,8 @@ export default [
         Element: 'readonly',
         DOMRect: 'readonly',
         localStorage: 'readonly',
+        fetch: 'readonly',
+        navigator: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         requestAnimationFrame: 'readonly',

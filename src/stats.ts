@@ -1,5 +1,5 @@
 // Anonymous gameplay counters; sends nothing unless VITE_STATS_URL is set (see uno-stats repo)
-const STATS_URL: string | undefined = import.meta.env.VITE_STATS_URL
+export const STATS_URL: string | undefined = import.meta.env.VITE_STATS_URL
 
 type GameEvent =
   | { event: 'started'; players: number }
