@@ -49,5 +49,7 @@
 	<true/>
 	<key>NSMotionUsageDescription</key>
 	<string>Tip your phone down to open the feedback form.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>
