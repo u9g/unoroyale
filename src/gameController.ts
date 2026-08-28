@@ -7,6 +7,7 @@ import * as Game from './engine/game'
 import * as AI from './engine/ai'
 import { playable } from './engine/rules'
 import { handSize } from './engine/player'
+import { track } from './stats'
 
 const AI_DELAY_MIN = 800
 const AI_DELAY_MAX = 1500
@@ -18,14 +19,30 @@ export function useGameController() {
   const playerCount = ref(Game.MAX_PLAYERS)
   const instantCpu = ref(localStorage.getItem('uno_instant_cpu') === 'true')
   let aiTimer: ReturnType<typeof setTimeout> | null = null
+  let startedAt = 0
+
+  function beginGame(state: GameState) {
+    gameState.value = state
+    phase.value = 'playing'
+    startedAt = Date.now()
+    track({ event: 'started', players: state.players.length })
+    maybeScheduleAiTurn(state)
+  }
+
+  function endGame(state: GameState) {
+    phase.value = 'game_over'
+    track({
+      event: 'finished',
+      players: state.players.length,
+      winner: state.players[state.winner!].type === 'human' ? 'human' : 'ai',
+      duration_s: Math.round((Date.now() - startedAt) / 1000),
+    })
+  }
 
   function startGame(name: string, count: number) {
     playerName.value = name
     playerCount.value = count
-    const state = Game.newGame(name, count)
-    gameState.value = state
-    phase.value = 'playing'
-    maybeScheduleAiTurn(state)
+    beginGame(Game.newGame(name, count))
   }
 
   function quitToLobby() {
@@ -36,10 +53,7 @@ export function useGameController() {
 
   function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
-    const state = Game.newGame(playerName.value, playerCount.value)
-    gameState.value = state
-    phase.value = 'playing'
-    maybeScheduleAiTurn(state)
+    beginGame(Game.newGame(playerName.value, playerCount.value))
   }
 
   function playCardAction(cardIndex: number, chosenColor?: Color | null) {
@@ -48,7 +62,7 @@ export function useGameController() {
     if (result.ok) {
       gameState.value = result.state
       if (result.state.phase === 'game_over') {
-        phase.value = 'game_over'
+        endGame(result.state)
       }
       maybeScheduleAiTurn(result.state)
     }
@@ -145,7 +159,7 @@ export function useGameController() {
 
     gameState.value = state
     if (state.phase === 'game_over') {
-      phase.value = 'game_over'
+      endGame(state)
     }
     maybeScheduleAiTurn(state)
   }
