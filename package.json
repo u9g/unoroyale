@@ -20,6 +20,7 @@
     "@capacitor/core": "^8.3.0",
     "@capacitor/ios": "^8.3.0",
     "@capacitor/preferences": "^8.0.1",
+    "@capgo/capacitor-updater": "^8.51.15",
     "vue": "^3.5.30"
   },
   "devDependencies": {
