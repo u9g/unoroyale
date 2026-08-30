@@ -1,4 +1,6 @@
 // Anonymous gameplay counters; sends nothing unless VITE_STATS_URL is set (see uno-stats repo)
+import { deviceId } from './deviceId'
+
 export const STATS_URL: string | undefined = import.meta.env.VITE_STATS_URL
 
 type GameEvent =
@@ -7,5 +9,5 @@ type GameEvent =
 
 export function track(data: GameEvent) {
   if (!STATS_URL) return
-  navigator.sendBeacon(STATS_URL, new Blob([JSON.stringify(data)], { type: 'application/json' }))
+  navigator.sendBeacon(STATS_URL, new Blob([JSON.stringify({ ...data, device_id: deviceId })], { type: 'application/json' }))
 }
