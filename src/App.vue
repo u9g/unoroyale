@@ -25,7 +25,8 @@ const isNewGame = ref(false)
 const showUnoPenalty = ref(false)
 const showTutorial = ref(false)
 const showFeedback = ref(false)
-useTiltDown(() => { showFeedback.value = true })
+const feedbackFromTilt = ref(false)
+useTiltDown(() => { showFeedback.value = true; feedbackFromTilt.value = true })
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
@@ -252,7 +253,7 @@ function renderMarkdown(md: string): string {
     <TutorialOverlay v-if="showTutorial" @close="showTutorial = false" />
 
     <!-- Feedback -->
-    <FeedbackSheet v-if="showFeedback" @close="showFeedback = false" />
+    <FeedbackSheet v-if="showFeedback" :snoozable="feedbackFromTilt" @close="showFeedback = false; feedbackFromTilt = false" />
 
     <!-- UNO Penalty Popup -->
     <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">

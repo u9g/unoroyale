@@ -6,6 +6,12 @@ const FLAT_DEG = 38
 const HOLD_UPRIGHT_MS = 150
 const DROP_WITHIN_MS = 2000
 const COOLDOWN_MS = 2000
+const SNOOZE_KEY = 'uno_tilt_snooze_until'
+const SNOOZE_MS = 1000 * 60 * 60 * 24 * 61 // 2 months
+
+export function snoozeTiltDown() {
+  localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS))
+}
 
 type MotionPermission = typeof DeviceMotionEvent & { requestPermission?: () => Promise<'granted' | 'denied'> }
 
@@ -32,6 +38,7 @@ export function useTiltDown(onTiltDown: () => void) {
       armedAt = null
       if (now - armed <= DROP_WITHIN_MS && now - lastTrigger >= COOLDOWN_MS) {
         lastTrigger = now
+        if (now < Number(localStorage.getItem(SNOOZE_KEY))) return
         onTiltDown()
       }
     }
