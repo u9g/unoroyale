@@ -13,7 +13,7 @@
 
 import { chromium } from 'playwright';
 import { createServer } from 'vite';
-import { mkdir } from 'fs/promises';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 import { fileURLToPath } from 'url';
 import path from 'path';
 
@@ -69,6 +69,54 @@ async function disableAnimations(page) {
       }
     `,
   });
+}
+
+// Screenshot renders and JPEG re-encodes aren't byte-deterministic, so a naive
+// write churns every file on every run and the pre-commit hook commits noise.
+// Only write when the capture is perceptually different from the existing file.
+const PIXEL_TOLERANCE = 24;      // per-channel delta below this is encoding jitter
+const CHANGED_FRACTION = 0.0005; // fraction of pixels that must really change
+
+/** Compare two encoded images in the browser; true if perceptually different. */
+async function imagesDiffer(page, oldBuf, newBuf) {
+  return page.evaluate(async ({ oldB64, newB64, tolerance, fraction }) => {
+    const load = (b64) =>
+      createImageBitmap(new Blob([Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))]));
+    const [a, b] = await Promise.all([load(oldB64), load(newB64)]);
+    if (a.width !== b.width || a.height !== b.height) return true;
+    const [pa, pb] = [a, b].map((img) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return ctx.getImageData(0, 0, img.width, img.height).data;
+    });
+    let changed = 0;
+    for (let i = 0; i < pa.length; i += 4) {
+      if (Math.abs(pa[i] - pb[i]) > tolerance ||
+          Math.abs(pa[i + 1] - pb[i + 1]) > tolerance ||
+          Math.abs(pa[i + 2] - pb[i + 2]) > tolerance) changed++;
+    }
+    return changed > (pa.length / 4) * fraction;
+  }, {
+    oldB64: oldBuf.toString('base64'),
+    newB64: newBuf.toString('base64'),
+    tolerance: PIXEL_TOLERANCE,
+    fraction: CHANGED_FRACTION,
+  });
+}
+
+/** Screenshot the page to filePath, skipping the write if nothing really changed. */
+async function saveScreenshot(page, filePath, label, options) {
+  const buffer = await page.screenshot(options);
+  const old = await readFile(filePath).catch(() => null);
+  if (old && !(await imagesDiffer(page, old, buffer))) {
+    console.log(`  ${label} (unchanged)`);
+    return;
+  }
+  await writeFile(filePath, buffer);
+  console.log(`  ${label}`);
 }
 
 /** Load the app once and disable animations. Call once per page. */
@@ -307,8 +355,7 @@ async function main() {
           await loadApp(page);
           await disableAnimations(page);
           await page.fill('.lobby__input', PLAYER_NAME);
-          await page.screenshot({ path: path.join(dir, '00-homescreen.jpg'), type: 'jpeg', quality: 90 });
-          console.log(`  ${device.name}/00-homescreen.jpg`);
+          await saveScreenshot(page, path.join(dir, '00-homescreen.jpg'), `${device.name}/00-homescreen.jpg`, { type: 'jpeg', quality: 90 });
         } catch (err) {
           console.error(`  ERROR ${device.name}/00-homescreen: ${err.message}`);
         } finally {
@@ -321,8 +368,7 @@ async function main() {
         try {
           await loadApp(page);
           await injectState(page, scenario.state, scenario.opts);
-          await page.screenshot({ path: path.join(dir, `${scenario.name}.jpg`), type: 'jpeg', quality: 90 });
-          console.log(`  ${device.name}/${scenario.name}.jpg`);
+          await saveScreenshot(page, path.join(dir, `${scenario.name}.jpg`), `${device.name}/${scenario.name}.jpg`, { type: 'jpeg', quality: 90 });
         } catch (err) {
           console.error(`  ERROR ${device.name}/${scenario.name}: ${err.message}`);
         } finally {
@@ -338,8 +384,7 @@ async function main() {
           await disableAnimations(page);
           for (const tutStep of TUTORIAL_STEPS) {
             await openTutorialStep(page, tutStep.step);
-            await page.screenshot({ path: path.join(dir, `${tutStep.name}.jpg`), type: 'jpeg', quality: 90 });
-            console.log(`  ${device.name}/${tutStep.name}.jpg`);
+            await saveScreenshot(page, path.join(dir, `${tutStep.name}.jpg`), `${device.name}/${tutStep.name}.jpg`, { type: 'jpeg', quality: 90 });
             await closeTutorial(page);
           }
         } catch (err) {
@@ -414,8 +459,7 @@ async function main() {
           requestAnimationFrame(() => requestAnimationFrame(resolve))
         ));
 
-        await page.screenshot({ path: path.join(OUTPUT, 'feature-graphic.png'), type: 'png' });
-        console.log('  feature-graphic.png');
+        await saveScreenshot(page, path.join(OUTPUT, 'feature-graphic.png'), 'feature-graphic.png', { type: 'png' });
       } catch (err) {
         console.error(`  ERROR feature-graphic: ${err.message}`);
       } finally {
