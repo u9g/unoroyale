@@ -6,9 +6,10 @@ DEST_FILE=$(mktemp)
 xcodebuild -project ios/App/App.xcodeproj -scheme App -showdestinations 2>/dev/null > "$DEST_FILE" &
 DEST_PID=$!
 
-npm run cap:sync
+DEV_DEPLOY=1 npm run cap:sync
 
-wait "$DEST_PID"
+# showdestinations can exit nonzero; set -e must not kill the script here
+wait "$DEST_PID" || true
 
 # Extract device ID + name from cached destinations
 DEVICE_LINE=$(grep 'platform:iOS, arch:' "$DEST_FILE" | grep -v Simulator | head -1)
@@ -23,12 +24,15 @@ fi
 DEVICE_NAME=$(echo "$DEVICE_LINE" | sed 's/.*name:\(.*\) }.*/\1/')
 echo "Deploying to $DEVICE_NAME ($DEVICE_ID)..."
 
-# Build for device
+# Build for device. The updater only discards a cached OTA bundle when
+# CFBundleVersion changes, so each dev build needs a unique build number
+# or stale OTA JS keeps loading.
 xcodebuild -project ios/App/App.xcodeproj -scheme App \
   -destination "id=$DEVICE_ID" \
   -allowProvisioningUpdates \
   -quiet \
-  SYMROOT="$PWD/ios/build"
+  SYMROOT="$PWD/ios/build" \
+  CURRENT_PROJECT_VERSION="$(date +%s)"
 
 # Install and launch on device
 xcrun devicectl device install app --device "$DEVICE_ID" "ios/build/Debug-iphoneos/App.app"
