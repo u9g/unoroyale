@@ -165,7 +165,7 @@ function renderMarkdown(md: string): string {
     <!-- Lobby -->
     <template v-if="controller.phase.value === 'lobby'">
       <div class="lobby">
-        <h1 class="lobby__title">UNO Royale</h1>
+        <h1 class="lobby__title">Card Royale</h1>
         <form class="lobby__form" @submit.prevent="startGame">
           <input
             v-model="playerNameInput"
@@ -263,8 +263,8 @@ function renderMarkdown(md: string): string {
     <!-- UNO Penalty Popup -->
     <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">
       <div class="uno-penalty-popup__card" @click.stop>
-        <h3 class="uno-penalty-popup__title">You forgot to say UNO!</h3>
-        <p class="uno-penalty-popup__text">When you play your second-to-last card, press the <strong>UNO</strong> button before playing your final card. If you don't, you'll draw 2 penalty cards instead of winning.</p>
+        <h3 class="uno-penalty-popup__title">You forgot to say ONE!</h3>
+        <p class="uno-penalty-popup__text">When you play your second-to-last card, press the <strong>ONE</strong> button before playing your final card. If you don't, you'll draw 2 penalty cards instead of winning.</p>
         <button class="uno-penalty-popup__btn" @click="showUnoPenalty = false">Got it</button>
       </div>
     </div>

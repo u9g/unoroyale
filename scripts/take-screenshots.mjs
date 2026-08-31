@@ -286,7 +286,7 @@ const TUTORIAL_STEPS = [
   { name: '07-tutorial-4-action-cards',      step: 3 },
   { name: '08-tutorial-5-wild-cards',        step: 4 },
   { name: '09-tutorial-6-choosing-a-color',  step: 5 },
-  { name: '10-tutorial-7-calling-uno',       step: 6 },
+  { name: '10-tutorial-7-calling-one',       step: 6 },
   { name: '11-tutorial-8-youre-ready',       step: 7 },
 ];
 

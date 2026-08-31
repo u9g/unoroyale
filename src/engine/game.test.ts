@@ -296,6 +296,13 @@ describe('sayUno', () => {
     if (result.ok) expect(result.state.players[0].saidUno).toBe(true)
   })
 
+  it('announces the call as ONE!', () => {
+    const state = newGame('Test')
+    const result = sayUno(state, 0)
+    expect(result.ok).toBe(true)
+    if (result.ok) expect(result.state.lastAction).toBe('Test called ONE!')
+  })
+
   it('succeeds regardless of hand size', () => {
     const state = newGame('Test')
     const result = sayUno(state, 0)
@@ -320,6 +327,7 @@ describe('UNO penalty', () => {
       expect(result.state.phase).toBe('playing')
       expect(handSize(result.state.players[0])).toBe(2)
       expect(result.state.unoPenalty).toBe(true)
+      expect(result.state.lastAction).toContain('Test forgot to call ONE! Drew 2 penalty cards.')
     }
   })
 

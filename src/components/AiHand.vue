@@ -27,7 +27,7 @@ const displayCount = () => Math.min(count(), 10)
         :class="['card', 'card--back', 'card--small', `ai-card--${position}`]"
         :style="`--card-index: ${i - 1}; --card-total: ${displayCount()};`"
       >
-        <span class="card__uno-text card__uno-text--small">UNO</span>
+        <span class="card__uno-text card__uno-text--small">♛</span>
       </div>
     </div>
   </div>

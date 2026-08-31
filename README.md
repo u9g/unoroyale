@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="public/logo.svg" alt="Uno Royale logo" width="200" />
+  <img src="public/logo.svg" alt="Card Royale logo" width="200" />
 </p>
 
-<h1 align="center">Uno Royale</h1>
+<h1 align="center">Card Royale</h1>
 
 | Desktop |
 | --- |
@@ -16,14 +16,14 @@
 | --- | --- |
 | ![iPhone gameplay](screenshots/iPhone/01-gameplay.jpg) | ![iPhone landscape gameplay](screenshots/iPhone-Landscape/01-gameplay.jpg) |
 
-A single-player UNO card game built with Vue 3, TypeScript, and Vite. Play against one to three AI opponents with full UNO rules including Draw Two, Skip, Reverse, Wild, and Wild Draw Four cards.
+A single-player card-shedding game built with Vue 3, TypeScript, and Vite. Play against one to three AI opponents with Draw Two, Skip, Reverse, Wild, and Wild +4 cards.
 
 ## Features
 
-- Classic UNO gameplay against 1–3 AI opponents (2–4 players at the table)
+- Classic card-matching gameplay against 1–3 AI opponents (2–4 players at the table)
 - AI opponents with randomized names from popular US baby names
 - Card drag-and-drop reordering
-- UNO call mechanic with penalty for forgetting
+- "ONE!" call mechanic with penalty for forgetting
 - Color chooser for Wild cards
 - Animated card draws and plays
 - Instant CPU mode for faster games

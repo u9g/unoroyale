@@ -322,7 +322,7 @@ function animateOneDrawnCard(targetCard: HTMLElement, srcRect: DOMRect, staggerD
 
   const front = document.createElement('div')
   front.className = 'card card--back'
-  front.innerHTML = '<span class="card__uno-text">UNO</span>'
+  front.innerHTML = '<span class="card__uno-text">♛</span>'
   front.style.cssText = 'position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px;'
 
   const back = targetCard.cloneNode(true) as HTMLElement
@@ -414,7 +414,7 @@ function animateDeal(onComplete?: () => void) {
 
       const front = document.createElement('div')
       front.className = 'card card--back'
-      front.innerHTML = '<span class="card__uno-text">UNO</span>'
+      front.innerHTML = '<span class="card__uno-text">♛</span>'
       front.style.cssText = 'position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px;'
 
       const back = card.cloneNode(true) as HTMLElement
@@ -670,7 +670,7 @@ function onDrop(e: DragEvent) {
 
 <template>
   <div class="top-bar">
-    <h1 class="top-bar__title">UNO Royale</h1>
+    <h1 class="top-bar__title">Card Royale</h1>
     <div class="top-bar__status">{{ gameState.lastAction }}</div>
     <button class="top-bar__new-game" @click="emit('newGame')">New Game</button>
   </div>
@@ -725,7 +725,7 @@ function onDrop(e: DragEvent) {
           @click="onDrawClick"
         >
           <div class="card card--back card--large">
-            <span class="card__uno-text">UNO</span>
+            <span class="card__uno-text">♛</span>
           </div>
         </div>
 
@@ -754,7 +754,7 @@ function onDrop(e: DragEvent) {
         <div v-if="isHumanTurn" class="your-turn-indicator">It's your turn!</div>
         <div class="human-hand__label">
           <span v-if="gameState.phase !== 'game_over'" class="human-hand__name">{{ human.name }}</span>
-          <button v-if="showUnoBtn" class="uno-btn" @click="emit('sayUno')">UNO!</button>
+          <button v-if="showUnoBtn" class="uno-btn" @click="emit('sayUno')">ONE!</button>
         </div>
         <div
           id="human-hand-cards"

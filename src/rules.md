@@ -1,8 +1,8 @@
-# UNO Royale - Game Rules
+# Card Royale - Game Rules
 
 ## Overview
 
-UNO Royale is a 2- to 4-player card game: you against 1–3 AI opponents with random names, seated across from you (2 players), to your left and right (3 players), or at West, North, and East (4 players). The goal is to be the first player to empty your hand.
+Card Royale is a 2- to 4-player card game: you against 1–3 AI opponents with random names, seated across from you (2 players), to your left and right (3 players), or at West, North, and East (4 players). The goal is to be the first player to empty your hand.
 
 ## The Deck
 
@@ -16,13 +16,13 @@ The deck has 108 cards:
   - **Draw Two (+2)** (2 per color) - Next player draws 2 cards, then takes their turn
 - **Wild cards** (no color):
   - **Wild** (4 total) - Play on anything, choose the next color
-  - **Wild Draw Four (+4)** (4 total) - Next player draws 4 cards, then takes their turn; you choose the next color
+  - **Wild +4** (4 total) - Next player draws 4 cards, then takes their turn; you choose the next color
 
 ## Setup
 
 1. Each player is dealt 7 cards
 2. One card is flipped from the draw pile to start the discard pile
-3. If the opening card is a **Wild Draw Four**, it is shuffled back and a new card is flipped
+3. If the opening card is a **Wild +4**, it is shuffled back and a new card is flipped
 4. Opening card effects are applied immediately:
    - **Skip**: You (the first player) are skipped
    - **Reverse**: Direction flips from counter-clockwise to clockwise
@@ -41,9 +41,9 @@ On your turn, you may play a card from your hand if it matches the top card of t
 
 - **Color** - Same color as the top card (or the chosen color if the top card is a wild)
 - **Value** - Same number or same action type (e.g., Skip on Skip)
-- **Wild** - Wild and Wild Draw Four can be played on anything
+- **Wild** - Wild and Wild +4 can be played on anything
 
-Playable cards are highlighted on your turn. Click a playable card to play it. If you play a Wild or Wild Draw Four, you'll be prompted to choose a color.
+Playable cards are highlighted on your turn. Click a playable card to play it. If you play a Wild or Wild +4, you'll be prompted to choose a color.
 
 ## Drawing a Card
 
@@ -61,19 +61,19 @@ If you have no playable cards (or choose not to play), click the draw pile to dr
 | **Reverse** | Turn direction flips (clockwise <-> counter-clockwise) |
 | **Draw Two (+2)** | Next player immediately receives 2 cards from the draw pile, then takes their normal turn |
 | **Wild** | You choose the color that the next player must match |
-| **Wild Draw Four (+4)** | Next player immediately receives 4 cards, you choose the color, then they take their normal turn |
+| **Wild +4** | Next player immediately receives 4 cards, you choose the color, then they take their normal turn |
 
 Note: Draw penalties are dealt automatically. The receiving player does **not** lose their turn - they draw the cards and then play normally.
 
-## Calling UNO
+## Calling ONE
 
-The UNO button is always visible during play. You must press it **before** playing your second-to-last card. If you play down to 0 cards without having called UNO, you draw 2 penalty cards instead of winning.
+The ONE button is always visible during play. You must press it **before** playing your second-to-last card. If you play down to 0 cards without having called ONE, you draw 2 penalty cards instead of winning.
 
-AI players call UNO automatically when they have 2 cards.
+AI players call ONE automatically when they have 2 cards.
 
 ## Winning
 
-The first player to play all their cards wins the game (provided they called UNO). If you win with a Wild or Wild Draw Four, the color chooser is skipped automatically. A game over screen appears with the option to play again.
+The first player to play all their cards wins the game (provided they called ONE). If you win with a Wild or Wild +4, the color chooser is skipped automatically. A game over screen appears with the option to play again.
 
 ## Recent Plays
 
@@ -89,14 +89,14 @@ If the draw pile runs out, all cards from the discard pile (except the top card)
 
 ## No Stacking
 
-Draw Two and Wild Draw Four cards **cannot** be stacked. When a +2 or +4 is played against you, you receive the cards immediately with no option to counter with your own +2 or +4.
+Draw Two and Wild +4 cards **cannot** be stacked. When a +2 or +4 is played against you, you receive the cards immediately with no option to counter with your own +2 or +4.
 
 ## AI Behavior
 
 The AI opponents play with a simple strategy:
 
 - They prioritize **Draw Two** (highest), then **Skip**, then **high number cards**, then **Reverse**
-- They save **Wild** and **Wild Draw Four** cards for last (lowest priority)
+- They save **Wild** and **Wild +4** cards for last (lowest priority)
 - When choosing a color for wilds, they pick the color they hold the most of
 - If they have no playable card, they draw and immediately play the drawn card if possible
 - AI turns are delayed 0.8-1.5 seconds to feel more natural

@@ -103,7 +103,7 @@ export function sayUno(
 ): { ok: true; state: GameState } {
   const player = state.players[playerIndex]
   const updated = updatePlayer(state, playerIndex, p => ({ ...p, saidUno: true }))
-  return { ok: true, state: { ...updated, lastAction: `${player.name} called UNO!` } }
+  return { ok: true, state: { ...updated, lastAction: `${player.name} called ONE!` } }
 }
 
 export function pass(
@@ -321,5 +321,5 @@ function unoPenalty(state: GameState, playerIndex: number): GameState {
 
   let s: GameState = { ...state, drawPile }
   s = updatePlayer(s, playerIndex, p => addCards(p, penaltyCards))
-  return { ...s, lastAction: `${player.name} forgot to call UNO! Drew 2 penalty cards.` }
+  return { ...s, lastAction: `${player.name} forgot to call ONE! Drew 2 penalty cards.` }
 }

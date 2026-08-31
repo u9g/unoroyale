@@ -61,7 +61,7 @@ const steps: TutorialStep[] = [
   },
   {
     title: 'Wild Cards',
-    body: '<strong>Wild</strong> — play it anytime and choose the next color.<br><strong>Wild Draw Four (+4)</strong> — play it anytime, choose the color, and the next player draws 4 cards and loses their turn.',
+    body: '<strong>Wild</strong> — play it anytime and choose the next color.<br><strong>Wild +4</strong> — play it anytime, choose the color, and the next player draws 4 cards and loses their turn.',
     cards: [
       { color: null, value: 'wild' },
       { color: null, value: 'wild_draw_four' },
@@ -79,14 +79,14 @@ const steps: TutorialStep[] = [
     ],
   },
   {
-    title: 'Calling UNO!',
-    body: 'When you\'re down to <strong>one card</strong>, press the <strong>UNO</strong> button before playing your last card. If you forget, you\'ll draw <strong>2 penalty cards</strong> instead of winning!',
+    title: 'Calling ONE!',
+    body: 'When you\'re down to <strong>one card</strong>, press the <strong>ONE</strong> button before playing your last card. If you forget, you\'ll draw <strong>2 penalty cards</strong> instead of winning!',
     unoButton: true,
-    tip: 'Press UNO after playing your second-to-last card, before your final play.',
+    tip: 'Press ONE after playing your second-to-last card, before your final play.',
   },
   {
     title: 'You\'re Ready!',
-    body: 'That\'s everything you need to know. Play cards by matching color or value, use action cards strategically, and don\'t forget to call UNO. <strong>Good luck!</strong>',
+    body: 'That\'s everything you need to know. Play cards by matching color or value, use action cards strategically, and don\'t forget to call ONE. <strong>Good luck!</strong>',
     cards: [
       { color: 'red', value: 0 },
       { color: 'blue', value: 'skip' },
@@ -192,7 +192,7 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
           </div>
 
           <div v-if="steps[currentStep].unoButton" class="tutorial__uno-demo">
-            <button class="uno-btn uno-btn--demo">UNO</button>
+            <button class="uno-btn uno-btn--demo">ONE</button>
           </div>
 
           <p class="tutorial__step-text" v-html="steps[currentStep].body"></p>

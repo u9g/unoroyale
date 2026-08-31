@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'dev.u9g.unoroyale',
-  appName: 'Uno Royale',
+  appName: 'Card Royale',
   webDir: 'dist',
   plugins: {
     CapacitorUpdater: {
