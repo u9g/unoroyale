@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { STATS_URL } from '../stats'
+import { deviceId } from '../deviceId'
 
 const emit = defineEmits<{ close: [] }>()
 
@@ -20,7 +21,7 @@ async function submit() {
     const res = await fetch(`${STATS_URL}/feedback`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ message: message.value.trim(), email: email.value.trim() || undefined }),
+      body: JSON.stringify({ message: message.value.trim(), email: email.value.trim() || undefined, device_id: deviceId }),
     })
     state.value = res.ok ? 'sent' : 'error'
   } catch {
