@@ -7,7 +7,7 @@ const HOLD_UPRIGHT_MS = 150
 const DROP_WITHIN_MS = 2000
 const COOLDOWN_MS = 2000
 const SNOOZE_KEY = 'uno_tilt_snooze_until'
-const SNOOZE_MS = 1000 * 60 * 60 * 24 * 61 // 2 months
+const SNOOZE_MS = 1000 * 60 * 60 * 24 * 7 // 1 week
 
 export function snoozeTiltDown() {
   localStorage.setItem(SNOOZE_KEY, String(Date.now() + SNOOZE_MS))

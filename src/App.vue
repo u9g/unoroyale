@@ -9,7 +9,7 @@ import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
 import FeedbackSheet from './components/FeedbackSheet.vue'
-import { useTiltDown } from './tiltDown'
+import { snoozeTiltDown, useTiltDown } from './tiltDown'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
@@ -27,6 +27,11 @@ const showTutorial = ref(false)
 const showFeedback = ref(false)
 const feedbackFromTilt = ref(false)
 useTiltDown(() => { showFeedback.value = true; feedbackFromTilt.value = true })
+function closeFeedback() {
+  if (feedbackFromTilt.value) snoozeTiltDown()
+  showFeedback.value = false
+  feedbackFromTilt.value = false
+}
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
@@ -253,7 +258,7 @@ function renderMarkdown(md: string): string {
     <TutorialOverlay v-if="showTutorial" @close="showTutorial = false" />
 
     <!-- Feedback -->
-    <FeedbackSheet v-if="showFeedback" :snoozable="feedbackFromTilt" @close="showFeedback = false; feedbackFromTilt = false" />
+    <FeedbackSheet v-if="showFeedback" @close="closeFeedback" />
 
     <!-- UNO Penalty Popup -->
     <div v-if="showUnoPenalty" class="uno-penalty-popup" @click="showUnoPenalty = false">

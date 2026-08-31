@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { STATS_URL } from '../stats'
-import { snoozeTiltDown } from '../tiltDown'
 
-defineProps<{ snoozable?: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 
 const visible = ref(true)
@@ -63,14 +61,6 @@ async function submit() {
           </p>
           <button type="submit" class="feedback-sheet__btn" :disabled="state === 'sending' || !message.trim()">
             {{ state === 'sending' ? 'Sending…' : 'Send' }}
-          </button>
-          <button
-            v-if="snoozable"
-            type="button"
-            class="feedback-sheet__snooze"
-            @click="snoozeTiltDown(); visible = false"
-          >
-            Don't ask again for 2 months
           </button>
         </template>
       </form>
