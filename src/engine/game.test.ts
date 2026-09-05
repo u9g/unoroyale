@@ -209,8 +209,8 @@ describe('playCard', () => {
     }
   })
 
-  it('game over when hand is empty', () => {
-    let state = newGame('Test')
+  it('game over when hand is empty in a 2-player game', () => {
+    let state = newGame('Test', 2)
     const card: Card = { color: 'red', value: 5 }
     state = {
       ...state,
@@ -223,8 +223,56 @@ describe('playCard', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.state.phase).toBe('game_over')
-      expect(result.state.winner).toBe(0)
+      expect(result.state.finished).toEqual([0, 1])
     }
+  })
+
+  it('play continues after the first player empties their hand', () => {
+    let state = newGame('Test', 4)
+    state = {
+      ...state,
+      discardPile: [{ color: 'red', value: 1 }],
+      currentPlayer: 0,
+      direction: 'clockwise',
+    }
+    state = updatePlayer(state, 0, p => ({ ...p, hand: [{ color: 'red', value: 5 }], saidUno: true }))
+
+    const result = playCard(state, 0, 0)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.state.phase).toBe('playing')
+    expect(result.state.finished).toEqual([0])
+    expect(result.state.currentPlayer).toBe(1)
+    expect(result.state.lastAction).toMatch(/is out in 1st!/)
+  })
+
+  it('turn order skips finished players and game ends with one left', () => {
+    let state = newGame('Test', 3)
+    state = {
+      ...state,
+      discardPile: [{ color: 'red', value: 1 }],
+      currentPlayer: 2,
+      direction: 'clockwise',
+      finished: [0],
+    }
+    state = updatePlayer(state, 2, p => ({ ...p, hand: [{ color: 'red', value: 5 }], saidUno: true }))
+
+    // Skip card targets player 1, the next unfinished player; from 2 clockwise wraps past finished 0
+    const skipState = updatePlayer(
+      { ...state, currentPlayer: 1 },
+      1,
+      p => ({ ...p, hand: [{ color: 'red', value: 'skip' }, ...p.hand], saidUno: false })
+    )
+    const skip = playCard(skipState, 1, 0)
+    expect(skip.ok).toBe(true)
+    if (!skip.ok) return
+    expect(skip.state.currentPlayer).toBe(1)
+
+    const result = playCard(state, 2, 0)
+    expect(result.ok).toBe(true)
+    if (!result.ok) return
+    expect(result.state.phase).toBe('game_over')
+    expect(result.state.finished).toEqual([0, 2, 1])
   })
 })
 
@@ -332,7 +380,7 @@ describe('UNO penalty', () => {
   })
 
   it('allows win when UNO was called', () => {
-    let state = newGame('Test')
+    let state = newGame('Test', 2)
     const card: Card = { color: 'red', value: 5 }
     state = {
       ...state,
@@ -345,14 +393,14 @@ describe('UNO penalty', () => {
     expect(result.ok).toBe(true)
     if (result.ok) {
       expect(result.state.phase).toBe('game_over')
-      expect(result.state.winner).toBe(0)
+      expect(result.state.finished[0]).toBe(0)
     }
   })
 })
 
 describe('AI win', () => {
   it('AI wins after calling UNO with 2 cards then playing last card next turn', () => {
-    let state = newGame('Test')
+    let state = newGame('Test', 2)
     const card1: Card = { color: 'red', value: 3 }
     const card2: Card = { color: 'red', value: 5 }
     state = {
@@ -385,7 +433,7 @@ describe('AI win', () => {
     expect(play2.ok).toBe(true)
     if (!play2.ok) return
     expect(play2.state.phase).toBe('game_over')
-    expect(play2.state.winner).toBe(1)
+    expect(play2.state.finished[0]).toBe(1)
   })
 })
 

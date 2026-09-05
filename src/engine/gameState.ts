@@ -11,7 +11,7 @@ export interface GameState {
   currentPlayer: number
   direction: Direction
   phase: Phase
-  winner: number | null
+  finished: number[]
   lastAction: string | null
   unoPenalty: boolean
   recentPlays: [string, Card][]
@@ -37,7 +37,11 @@ export function updatePlayer(
 export function nextPlayerIndex(state: GameState): number {
   const count = state.players.length
   const delta = state.direction === 'clockwise' ? 1 : count - 1
-  return (state.currentPlayer + delta) % count
+  let idx = state.currentPlayer
+  do {
+    idx = (idx + delta) % count
+  } while (state.finished.includes(idx) && idx !== state.currentPlayer)
+  return idx
 }
 
 export function recordPlay(state: GameState, playerName: string, card: Card): GameState {

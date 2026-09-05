@@ -933,6 +933,14 @@ body {
   font-weight: 900;
 }
 
+.game-over__placements {
+  margin: 0;
+  padding-left: 1.5rem;
+  text-align: left;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
 .btn-play-again {
   padding: 0.75rem 2rem;
   border-radius: 8px;

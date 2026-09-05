@@ -104,10 +104,10 @@ function onDealComplete() {
   isNewGame.value = false
 }
 
-function winnerName(): string {
+function placements(): string[] {
   const gs = controller.gameState.value
-  if (!gs || gs.winner == null) return ''
-  return gs.players[gs.winner].name
+  if (!gs) return []
+  return gs.finished.map(i => gs.players[i].name)
 }
 
 // Watch for UNO penalty on the human player
@@ -220,7 +220,7 @@ function renderMarkdown(md: string): string {
         @deal-complete="() => {}"
         @menu="showMenu = !showMenu"
       />
-      <GameOverOverlay :winner-name="winnerName()" @play-again="newGameRestart" />
+      <GameOverOverlay :placements="placements()" @play-again="newGameRestart" />
     </template>
 
     <!-- Pause Menu -->

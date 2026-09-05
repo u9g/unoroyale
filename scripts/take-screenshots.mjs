@@ -202,7 +202,7 @@ const SCENARIOS = [
       currentPlayer: 0,
       direction: 'clockwise',
       phase: 'playing',
-      winner: null,
+      finished: [],
       lastAction: 'Sofia played Red 4',
       recentPlays: [
         ['Sofia',      { color: 'red',  value: 4 }],
@@ -237,7 +237,7 @@ const SCENARIOS = [
       currentPlayer: 0,
       direction: 'counter_clockwise',
       phase: 'playing',
-      winner: null,
+      finished: [],
       lastAction: 'Marcus played Green 8',
       recentPlays: [
         ['Marcus', { color: 'green', value: 8 }],
@@ -264,7 +264,7 @@ const SCENARIOS = [
       currentPlayer: 0,
       direction: 'clockwise',
       phase: 'game_over',
-      winner: 0,
+      finished: [0, 3, 1, 2],
       lastAction: `${PLAYER_NAME} wins!`,
       recentPlays: [
         [PLAYER_NAME, { color: 'blue', value: 3 }],

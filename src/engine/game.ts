@@ -60,7 +60,7 @@ export function newGame(playerName: string, playerCount: number = MAX_PLAYERS): 
     currentPlayer: 0,
     direction: 'counter_clockwise',
     phase: 'playing',
-    winner: null,
+    finished: [],
     lastAction: `Game started! ${cardToString(firstCard)} on the pile.`,
     unoPenalty: false,
     recentPlays: [],
@@ -199,10 +199,7 @@ function doPlayCard(
       s = { ...s, unoPenalty: playerIndex === 0, lastAction: `${penaltyAction} ${s.lastAction}` }
       return { ok: true, state: s }
     } else {
-      return {
-        ok: true,
-        state: { ...s, phase: 'game_over', winner: playerIndex, lastAction: `${player.name} wins!` },
-      }
+      return { ok: true, state: finishPlayer(s, playerIndex, playedCard) }
     }
   } else {
     // Reset saidUno only when hand has more than 1 card remaining —
@@ -213,6 +210,28 @@ function doPlayCard(
     s = applyCardEffect(s, playedCard, playerIndex)
     return { ok: true, state: s }
   }
+}
+
+function finishPlayer(state: GameState, playerIndex: number, playedCard: Card): GameState {
+  const player = state.players[playerIndex]
+  const finished = [...state.finished, playerIndex]
+  const remaining = state.players.map((_, i) => i).filter(i => !finished.includes(i))
+
+  if (remaining.length <= 1) {
+    return {
+      ...state,
+      phase: 'game_over',
+      finished: [...finished, ...remaining],
+      lastAction: finished.length === 1 ? `${player.name} wins!` : `${player.name} is out! Game over.`,
+    }
+  }
+
+  const s = applyCardEffect({ ...state, finished }, playedCard, playerIndex)
+  return { ...s, lastAction: `${player.name} is out in ${ordinal(finished.length)}! ${s.lastAction}` }
+}
+
+function ordinal(n: number): string {
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10 <= 3 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`
 }
 
 function applyCardEffect(state: GameState, card: Card, playerIndex: number): GameState {

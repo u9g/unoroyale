@@ -34,7 +34,7 @@ export function useGameController() {
     track({
       event: 'finished',
       players: state.players.length,
-      winner: state.players[state.winner!].type === 'human' ? 'human' : 'ai',
+      winner: state.players[state.finished[0]].type === 'human' ? 'human' : 'ai',
       duration_s: Math.round((Date.now() - startedAt) / 1000),
     })
   }
