@@ -1174,7 +1174,19 @@ body {
 .rules-modal__body th, .rules-modal__body td { padding: 0.4rem 0.75rem; border: 1px solid rgba(255,255,255,0.15); text-align: left; }
 .rules-modal__body th { background: rgba(255,255,255,0.05); font-weight: 600; }
 .rules-modal__body strong { color: #fff; }
-.rules-modal__device { margin-top: 1rem; font-size: 0.75rem; opacity: 0.5; user-select: all; }
+.rules-modal__device {
+  display: block;
+  margin: 1rem auto 1.5rem;
+  padding: 0.5rem 1.25rem;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.7);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
 
 /* ---- UNO Penalty Popup ---- */
 .uno-penalty-popup {
