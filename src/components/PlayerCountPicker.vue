@@ -3,22 +3,21 @@ import { computed } from 'vue'
 
 const props = defineProps<{
   modelValue: number
-  min: number
-  max: number
+  options: number[]
 }>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: number]
 }>()
 
-const values = computed(() => Array.from({ length: props.max - props.min + 1 }, (_, i) => props.min + i))
-const selectedIndex = computed(() => props.modelValue - props.min)
+const selectedIndex = computed(() => props.options.indexOf(props.modelValue))
 
 function onKeyDown(e: KeyboardEvent) {
   const step = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0
   if (!step) return
   e.preventDefault()
-  emit('update:modelValue', Math.max(props.min, Math.min(props.max, props.modelValue + step)))
+  const next = props.options[Math.max(0, Math.min(props.options.length - 1, selectedIndex.value + step))]
+  emit('update:modelValue', next)
 }
 </script>
 
@@ -26,12 +25,12 @@ function onKeyDown(e: KeyboardEvent) {
   <div
     class="segmented"
     role="radiogroup"
-    :style="{ '--count': values.length, '--selected': selectedIndex }"
+    :style="{ '--count': options.length, '--selected': selectedIndex }"
     @keydown="onKeyDown"
   >
     <span class="segmented__thumb" aria-hidden="true" />
     <button
-      v-for="value in values"
+      v-for="value in options"
       :key="value"
       type="button"
       role="radio"
