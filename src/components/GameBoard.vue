@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import type { Color } from '../engine/card'
 import type { GameState } from '../engine/gameState'
 import { topCard, nextPlayerIndex } from '../engine/gameState'
 import { playableIndices } from '../engine/rules'
+import { ordinal } from '../engine/game'
 import CardFace from './CardFace.vue'
 import AiHand from './AiHand.vue'
 import DiscardPile from './DiscardPile.vue'
@@ -491,13 +492,31 @@ const arrowFrom = computed(() => props.gameState.currentPlayer)
 const arrowTo = computed(() => nextPlayerIndex(props.gameState))
 
 type Seat = 'top' | 'left' | 'right'
-// AI player indices (1..n-1) by seat; 2 players faces you, 3 players flank you
-const SEATS_BY_COUNT: Record<number, Partial<Record<Seat, number>>> = {
-  2: { top: 1 },
-  3: { left: 1, right: 2 },
-  4: { left: 1, top: 2, right: 3 },
+// Seats by number of AIs still in the game; one faces you, two flank you
+const SEAT_ORDER: Record<number, Seat[]> = {
+  1: ['top'],
+  2: ['left', 'right'],
+  3: ['left', 'top', 'right'],
 }
-const seats = computed(() => SEATS_BY_COUNT[props.gameState.players.length] ?? SEATS_BY_COUNT[4])
+// Players who have gone out leave the table; at game over everyone is shown again
+const seatedAis = computed(() => {
+  const { players, finished, phase } = props.gameState
+  return players.map((_, i) => i).filter(i => i !== 0 && (phase === 'game_over' || !finished.includes(i)))
+})
+const seats = computed<Partial<Record<Seat, number>>>(() => {
+  const order = SEAT_ORDER[seatedAis.value.length] ?? SEAT_ORDER[3]
+  return Object.fromEntries(order.map((seat, k) => [seat, seatedAis.value[k]]))
+})
+
+const outToast = ref('')
+let outToastTimer: ReturnType<typeof setTimeout> | null = null
+watch(() => props.gameState.finished.length, (n, prev) => {
+  if (n <= prev || props.gameState.phase === 'game_over') return
+  const idx = props.gameState.finished[n - 1]
+  outToast.value = `${props.gameState.players[idx].name} is out in ${ordinal(n)}!`
+  if (outToastTimer) clearTimeout(outToastTimer)
+  outToastTimer = setTimeout(() => (outToast.value = ''), 3000)
+})
 
 function seatOfPlayer(idx: number): Seat | 'bottom' {
   if (idx === 0) return 'bottom'
@@ -674,6 +693,8 @@ function onDrop(e: DragEvent) {
     <div class="top-bar__status">{{ gameState.lastAction }}</div>
     <button class="top-bar__new-game" @click="emit('newGame')">New Game</button>
   </div>
+
+  <div v-if="outToast" class="out-toast">{{ outToast }}</div>
 
   <div :class="['game-table', `game-table--${gameState.direction}`]">
     <!-- Direction arrow -->
