@@ -10,6 +10,7 @@ import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
 import FeedbackSheet from './components/FeedbackSheet.vue'
 import { snoozeTiltDown, useTiltDown } from './tiltDown'
+import { deviceId } from './deviceId'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
@@ -251,7 +252,10 @@ function renderMarkdown(md: string): string {
             <button class="rules-modal__close" @click="showRules = false; rulesExpanded = false">&times;</button>
           </div>
         </div>
-        <div class="rules-modal__body" v-html="renderMarkdown(rulesContent)"></div>
+        <div class="rules-modal__body">
+          <div v-html="renderMarkdown(rulesContent)"></div>
+          <p class="rules-modal__device">Device ID: {{ deviceId }}</p>
+        </div>
       </div>
     </div>
 
