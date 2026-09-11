@@ -230,7 +230,7 @@ function finishPlayer(state: GameState, playerIndex: number, playedCard: Card): 
   return { ...s, lastAction: `${player.name} is out in ${ordinal(finished.length)}! ${s.lastAction}` }
 }
 
-function ordinal(n: number): string {
+export function ordinal(n: number): string {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10 <= 3 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`
 }
 

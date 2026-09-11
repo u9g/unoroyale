@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import type { Card } from './card'
 import { displayColor } from './card'
-import { newGame, playCard, drawCard, sayUno, pass } from './game'
+import { newGame, playCard, drawCard, sayUno, pass, ordinal } from './game'
 import { topCard, updatePlayer } from './gameState'
 import { handSize } from './player'
 
@@ -452,5 +452,11 @@ describe('pass', () => {
     const result = pass(state, 0)
     expect(result.ok).toBe(false)
     if (!result.ok) expect(result.error).toBe('not_your_turn')
+  })
+})
+
+describe('ordinal', () => {
+  it('formats placings', () => {
+    expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 23].map(ordinal)).toEqual(['1st', '2nd', '3rd', '4th', '11th', '12th', '13th', '21st', '22nd', '23rd'])
   })
 })

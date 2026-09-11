@@ -880,6 +880,25 @@ body {
   to { opacity: 1; }
 }
 
+/* ---- Player-out toast ---- */
+.out-toast {
+  position: fixed;
+  top: calc(var(--safe-top) + 6.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  background: rgba(15,23,42,0.9);
+  color: #eab308;
+  font-size: 1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  z-index: 150;
+  pointer-events: none;
+  animation: fade-in 0.2s ease;
+}
+
 /* ---- Color Chooser ---- */
 .color-chooser {
   background: #1e293b;
