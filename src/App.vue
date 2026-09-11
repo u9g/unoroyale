@@ -15,8 +15,9 @@ import rulesContent from './rules.md?raw'
 const controller = useGameController()
 
 const playerNameInput = ref('')
+const PLAYER_COUNT_OPTIONS = [MIN_PLAYERS, MAX_PLAYERS]
 const savedPlayerCount = Number(localStorage.getItem('uno_player_count'))
-const playerCountInput = ref(savedPlayerCount >= MIN_PLAYERS && savedPlayerCount <= MAX_PLAYERS ? savedPlayerCount : MAX_PLAYERS)
+const playerCountInput = ref(PLAYER_COUNT_OPTIONS.includes(savedPlayerCount) ? savedPlayerCount : MAX_PLAYERS)
 const showMenu = ref(false)
 const showRules = ref(false)
 const rulesExpanded = ref(false)
@@ -175,7 +176,7 @@ function renderMarkdown(md: string): string {
             required
           />
           <label class="lobby__players">
-            <PlayerCountPicker v-model="playerCountInput" :min="MIN_PLAYERS" :max="MAX_PLAYERS" />
+            <PlayerCountPicker v-model="playerCountInput" :options="PLAYER_COUNT_OPTIONS" />
             <span>players at the table</span>
           </label>
           <button type="submit" class="lobby__btn">Start Game</button>
