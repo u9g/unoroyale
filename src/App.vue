@@ -20,6 +20,12 @@ const PLAYER_COUNT_OPTIONS = [MIN_PLAYERS, MAX_PLAYERS]
 const savedPlayerCount = Number(localStorage.getItem('uno_player_count'))
 const playerCountInput = ref(PLAYER_COUNT_OPTIONS.includes(savedPlayerCount) ? savedPlayerCount : MAX_PLAYERS)
 const showMenu = ref(false)
+const deviceIdCopied = ref(false)
+async function copyDeviceId() {
+  await navigator.clipboard.writeText(deviceId)
+  deviceIdCopied.value = true
+  setTimeout(() => (deviceIdCopied.value = false), 1500)
+}
 const showRules = ref(false)
 const rulesExpanded = ref(false)
 const choosingColor = ref(false)
@@ -254,7 +260,7 @@ function renderMarkdown(md: string): string {
         </div>
         <div class="rules-modal__body">
           <div v-html="renderMarkdown(rulesContent)"></div>
-          <p class="rules-modal__device">Device ID: {{ deviceId }}</p>
+          <button type="button" class="rules-modal__device" @click="copyDeviceId">{{ deviceIdCopied ? 'Copied' : 'Copy Device ID' }}</button>
         </div>
       </div>
     </div>
