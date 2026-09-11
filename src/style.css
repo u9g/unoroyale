@@ -453,8 +453,17 @@ body {
   background: linear-gradient(135deg, #ef4444 25%, #3b82f6 25%, #3b82f6 50%, #22c55e 50%, #22c55e 75%, #eab308 75%);
 }
 .card--back {
-  background: #1e293b;
-  border-color: #475569;
+  background: radial-gradient(circle at 50% 30%, #166534, #052e16);
+  border-color: #fff;
+}
+
+.card--back::before {
+  content: "";
+  position: absolute;
+  inset: 7%;
+  border: 1.5px solid #eab308;
+  border-radius: calc(var(--card-radius) * 0.6);
+  pointer-events: none;
 }
 
 /* Card Face Elements */
@@ -534,16 +543,14 @@ body {
 }
 
 .card__uno-text {
-  font-size: 1rem;
-  font-weight: 900;
-  font-style: italic;
-  color: #ef4444;
-  text-shadow: none;
-  letter-spacing: -0.05em;
+  font-size: calc(var(--card-font) * 2.4);
+  color: #eab308;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  line-height: 1;
 }
 
 .card__uno-text--small {
-  font-size: 0.55rem;
+  font-size: calc(var(--card-sm-font) * 2);
 }
 
 /* Card States */
