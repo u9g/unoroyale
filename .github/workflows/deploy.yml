@@ -1,8 +1,9 @@
 name: Deploy to GitHub Pages
 
+# main deploys Pages + latest.json; ota-try only publishes a bundle release (see scripts/ota-try.sh)
 on:
   push:
-    branches: [main]
+    branches: [main, ota-try]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +12,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: ${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,15 +30,18 @@ jobs:
       - run: |
           VERSION=${GITHUB_SHA::7}
           (cd dist && zip -qr ../bundle.zip .)
-          gh release create "bundle-$VERSION" bundle.zip --title "bundle $VERSION" --notes "$GITHUB_SHA"
+          # the same commit may already have been built from the ota-try branch
+          gh release view "bundle-$VERSION" >/dev/null 2>&1 || gh release create "bundle-$VERSION" bundle.zip --title "bundle $VERSION" --notes "$GITHUB_SHA"
           echo "{\"version\":\"$VERSION\",\"url\":\"https://github.com/$GITHUB_REPOSITORY/releases/download/bundle-$VERSION/bundle.zip\"}" > dist/latest.json
         env:
           GH_TOKEN: ${{ github.token }}
-      - uses: actions/upload-pages-artifact@v3
+      - if: github.ref == 'refs/heads/main'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
+    if: github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
     environment:
