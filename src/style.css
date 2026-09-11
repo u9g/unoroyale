@@ -142,7 +142,7 @@ body {
   color: #fff;
 }
 
-/* ---- Player count wheel ---- */
+/* ---- Player count switch ---- */
 .lobby__players {
   display: flex;
   align-items: center;
@@ -153,45 +153,50 @@ body {
   user-select: none;
 }
 
-.wheel {
-  --wheel-item: 40px;
+.segmented {
+  --segment: 2.75rem;
 
   position: relative;
-  height: calc(var(--wheel-item) * 3.5);
-  width: 3.25rem;
-  overflow: hidden;
-  cursor: grab;
-  touch-action: none;
-  user-select: none;
-  outline: none;
-  mask-image: linear-gradient(to bottom, transparent, #000 45%, #000 55%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 45%, #000 55%, transparent);
+  display: grid;
+  grid-template-columns: repeat(var(--count), var(--segment));
+  padding: 3px;
+  border-radius: 10px;
+  background: rgba(0,0,0,0.3);
 }
 
-.wheel:active {
-  cursor: grabbing;
-}
-
-.wheel:focus-visible .wheel__highlight {
-  border-color: #eab308;
-}
-
-.wheel__canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.wheel__highlight {
+.segmented__thumb {
   position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: var(--wheel-item);
-  margin-top: calc(var(--wheel-item) / -2);
-  border-top: 1px solid rgba(255,255,255,0.25);
-  border-bottom: 1px solid rgba(255,255,255,0.25);
-  pointer-events: none;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: var(--segment);
+  border-radius: 8px;
+  background: #3b82f6;
+  transform: translateX(calc(var(--selected) * var(--segment)));
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.segmented__option {
+  position: relative;
+  height: 2.25rem;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: rgba(255,255,255,0.6);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.segmented__option--selected {
+  color: #fff;
+}
+
+.segmented__option:focus-visible {
+  outline: 2px solid #eab308;
+  outline-offset: -2px;
 }
 
 /* ---- Feedback sheet ---- */
