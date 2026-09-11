@@ -1174,6 +1174,7 @@ body {
 .rules-modal__body th, .rules-modal__body td { padding: 0.4rem 0.75rem; border: 1px solid rgba(255,255,255,0.15); text-align: left; }
 .rules-modal__body th { background: rgba(255,255,255,0.05); font-weight: 600; }
 .rules-modal__body strong { color: #fff; }
+.rules-modal__device { margin-top: 1rem; font-size: 0.75rem; opacity: 0.5; user-select: all; }
 
 /* ---- UNO Penalty Popup ---- */
 .uno-penalty-popup {
