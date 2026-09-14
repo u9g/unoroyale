@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { Color } from './engine/card'
 import { isWild } from './engine/card'
 import { useGameController } from './gameController'
+import type { Mode } from './gameController'
 import { MIN_PLAYERS, MAX_PLAYERS } from './engine/game'
-import PlayerCountPicker from './components/PlayerCountPicker.vue'
+import SegmentedPicker from './components/SegmentedPicker.vue'
+import RankedResultOverlay from './components/RankedResultOverlay.vue'
+import { ARENAS, arenaFor, profile } from './ranked'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
@@ -24,6 +27,18 @@ const playerNameInput = ref('')
 const PLAYER_COUNT_OPTIONS = [MIN_PLAYERS, MAX_PLAYERS]
 const savedPlayerCount = Number(localStorage.getItem('uno_player_count'))
 const playerCountInput = ref(PLAYER_COUNT_OPTIONS.includes(savedPlayerCount) ? savedPlayerCount : MAX_PLAYERS)
+const MODE_OPTIONS = ['Ranked', 'Casual']
+const modeInput = ref(localStorage.getItem('uno_mode') === 'Casual' ? 'Casual' : 'Ranked')
+const mode = computed((): Mode => (modeInput.value === 'Ranked' ? 'ranked' : 'casual'))
+const arena = computed(() => arenaFor(profile.value.trophies))
+const nextArena = computed(() => ARENAS.find(a => a.min > profile.value.trophies) ?? null)
+const arenaProgress = computed(() => {
+  const next = nextArena.value
+  if (!next) return 100
+  const span = next.min - arena.value.min
+  return Math.round(((profile.value.trophies - arena.value.min) / span) * 100)
+})
+const wonLastRanked = computed(() => controller.gameState.value?.finished[0] === 0)
 const showMenu = ref(false)
 const deviceIdCopied = ref(false)
 async function copyDeviceId() {
@@ -62,9 +77,10 @@ function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
   localStorage.setItem('uno_player_name', name)
   localStorage.setItem('uno_player_count', String(playerCountInput.value))
+  localStorage.setItem('uno_mode', modeInput.value)
   isNewGame.value = true
   gameKey.value++
-  controller.startGame(name, playerCountInput.value)
+  controller.startGame(name, playerCountInput.value, mode.value)
 }
 
 function handlePlayCard(index: number) {
@@ -186,7 +202,7 @@ function renderMarkdown(md: string): string {
           target="_blank"
           rel="noreferrer"
         >OTA {{ bundleVersion }}</a>
-        <form class="lobby__form" @submit.prevent="startGame">
+        <form :class="['lobby__form', mode === 'ranked' && 'lobby__form--ranked']" @submit.prevent="startGame">
           <input
             v-model="playerNameInput"
             type="text"
@@ -194,11 +210,28 @@ function renderMarkdown(md: string): string {
             class="lobby__input"
             required
           />
-          <label class="lobby__players">
-            <PlayerCountPicker v-model="playerCountInput" :options="PLAYER_COUNT_OPTIONS" />
+
+          <SegmentedPicker v-model="modeInput" :options="MODE_OPTIONS" class="segmented--wide" />
+
+          <div v-if="mode === 'ranked'" class="arena" :style="{ '--arena-accent': arena.accent }">
+            <div class="arena__head">
+              <span class="arena__name">{{ arena.name }}</span>
+              <span class="arena__trophies">{{ profile.trophies }} ♛</span>
+            </div>
+            <div class="arena__track">
+              <div class="arena__fill" :style="{ width: arenaProgress + '%' }" />
+            </div>
+            <span class="arena__next">
+              {{ nextArena ? `${nextArena.min - profile.trophies} ♛ to ${nextArena.name}` : 'Top arena reached' }}
+            </span>
+          </div>
+
+          <label v-else class="lobby__players">
+            <SegmentedPicker v-model="playerCountInput" :options="PLAYER_COUNT_OPTIONS" />
             <span>players at the table</span>
           </label>
-          <button type="submit" class="lobby__btn">Start Game</button>
+
+          <button type="submit" class="lobby__btn">{{ mode === 'ranked' ? 'Find Match' : 'Start Game' }}</button>
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>
@@ -240,7 +273,14 @@ function renderMarkdown(md: string): string {
         @deal-complete="() => {}"
         @menu="showMenu = !showMenu"
       />
-      <GameOverOverlay :placements="placements()" @play-again="newGameRestart" />
+      <RankedResultOverlay
+        v-if="controller.mode.value === 'ranked' && controller.lastRanked.value"
+        :result="controller.lastRanked.value"
+        :won="wonLastRanked"
+        @play-again="newGameRestart"
+        @main-menu="quitToLobby"
+      />
+      <GameOverOverlay v-else :placements="placements()" @play-again="newGameRestart" />
     </template>
 
     <!-- Pause Menu -->

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
+type Option = string | number
+
 const props = defineProps<{
-  modelValue: number
-  options: number[]
+  modelValue: Option
+  options: Option[]
 }>()
 
 const emit = defineEmits<{
-  'update:modelValue': [value: number]
+  'update:modelValue': [value: Option]
 }>()
 
 const selectedIndex = computed(() => props.options.indexOf(props.modelValue))

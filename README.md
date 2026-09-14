@@ -16,10 +16,11 @@
 | --- | --- |
 | ![iPhone gameplay](screenshots/iPhone/01-gameplay.jpg) | ![iPhone landscape gameplay](screenshots/iPhone-Landscape/01-gameplay.jpg) |
 
-A single-player card-shedding game built with Vue 3, TypeScript, and Vite. Play against one to three AI opponents with Draw Two, Skip, Reverse, Wild, and Wild +4 cards.
+A single-player card-shedding game built with Vue 3, TypeScript, and Vite. Play a ranked one-on-one ladder or a casual table of up to four, with Draw Two, Skip, Reverse, Wild, and Wild +4 cards.
 
 ## Features
 
+- **Ranked mode** — a heads-up trophy ladder across six arenas, where climbing puts you against sharper opponents
 - Classic card-matching gameplay against 1–3 AI opponents (2–4 players at the table)
 - AI opponents with randomized names from popular US baby names
 - Card drag-and-drop reordering

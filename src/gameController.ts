@@ -1,13 +1,16 @@
 import { ref } from 'vue'
 import type { Card, Color } from './engine/card'
-import { isWild } from './engine/card'
 import type { GameState } from './engine/gameState'
 import { topCard, updatePlayer } from './engine/gameState'
 import * as Game from './engine/game'
 import * as AI from './engine/ai'
 import { playable } from './engine/rules'
-import { handSize } from './engine/player'
 import { track } from './stats'
+import type { RankedResult } from './ranked'
+import { applyResult, profile, saveProfile, skillForTrophies } from './ranked'
+
+export type Mode = 'casual' | 'ranked'
+export const RANKED_PLAYERS = 2
 
 const AI_DELAY_MIN = 800
 const AI_DELAY_MAX = 1500
@@ -17,6 +20,8 @@ export function useGameController() {
   const phase = ref<'lobby' | 'playing' | 'game_over'>('lobby')
   const playerName = ref('')
   const playerCount = ref(Game.MAX_PLAYERS)
+  const mode = ref<Mode>('casual')
+  const lastRanked = ref<RankedResult | null>(null)
   const instantCpu = ref(localStorage.getItem('uno_instant_cpu') === 'true')
   let aiTimer: ReturnType<typeof setTimeout> | null = null
   let startedAt = 0
@@ -25,35 +30,56 @@ export function useGameController() {
     gameState.value = state
     phase.value = 'playing'
     startedAt = Date.now()
-    track({ event: 'started', players: state.players.length })
+    lastRanked.value = null
+    track({ event: 'started', players: state.players.length, mode: mode.value, trophies: profile.value.trophies })
     maybeScheduleAiTurn(state)
   }
 
   function endGame(state: GameState) {
     phase.value = 'game_over'
+    const won = state.finished[0] === 0
+    if (mode.value === 'ranked') settleRanked(won)
     track({
       event: 'finished',
       players: state.players.length,
-      winner: state.players[state.finished[0]].type === 'human' ? 'human' : 'ai',
+      winner: won ? 'human' : 'ai',
       duration_s: Math.round((Date.now() - startedAt) / 1000),
+      mode: mode.value,
+      trophies: profile.value.trophies,
     })
   }
 
-  function startGame(name: string, count: number) {
+  function settleRanked(won: boolean) {
+    const result = applyResult(profile.value, won)
+    lastRanked.value = result
+    saveProfile(result.profile)
+  }
+
+  function newRankedGame(): GameState {
+    return Game.newGame(playerName.value, RANKED_PLAYERS, {
+      aiSkill: skillForTrophies(profile.value.trophies),
+    })
+  }
+
+  function startGame(name: string, count: number, gameMode: Mode = 'casual') {
     playerName.value = name
-    playerCount.value = count
-    beginGame(Game.newGame(name, count))
+    mode.value = gameMode
+    playerCount.value = gameMode === 'ranked' ? RANKED_PLAYERS : count
+    beginGame(gameMode === 'ranked' ? newRankedGame() : Game.newGame(name, count))
   }
 
   function quitToLobby() {
     if (aiTimer) clearTimeout(aiTimer)
+    // Walking out of a ranked match still costs the trophies, so quitting is not an escape
+    if (mode.value === 'ranked' && phase.value === 'playing') settleRanked(false)
     gameState.value = null
     phase.value = 'lobby'
   }
 
   function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
-    beginGame(Game.newGame(playerName.value, playerCount.value))
+    if (mode.value === 'ranked' && phase.value === 'playing') settleRanked(false)
+    beginGame(mode.value === 'ranked' ? newRankedGame() : Game.newGame(playerName.value, playerCount.value))
   }
 
   function playCardAction(cardIndex: number, chosenColor?: Color | null) {
@@ -127,35 +153,7 @@ export function useGameController() {
 
   function executeAiTurn() {
     if (!gameState.value) return
-    let state = gameState.value
-    if (state.phase !== 'playing') return
-
-    const playerIndex = state.currentPlayer
-    const player = state.players[playerIndex]
-    if (player.type !== 'ai') return
-
-    // Auto-call UNO if AI has 2 cards
-    if (handSize(player) === 2) {
-      const unoResult = Game.sayUno(state, playerIndex)
-      if (unoResult.ok) state = unoResult.state
-    }
-
-    const action = AI.chooseAction(state, playerIndex)
-
-    if (action.type === 'play') {
-      const result = Game.playCard(state, playerIndex, action.cardIndex, action.color)
-      if (result.ok) {
-        state = result.state
-      } else {
-        state = drawAndPass(state, playerIndex)
-      }
-    } else {
-      // Draw
-      const drawResult = Game.drawCard(state, playerIndex)
-      if (drawResult.ok) {
-        state = tryPlayDrawnCard(drawResult.state, playerIndex, drawResult.drawnCard)
-      }
-    }
+    const state = AI.takeAiTurn(gameState.value, gameState.value.currentPlayer)
 
     gameState.value = state
     if (state.phase === 'game_over') {
@@ -164,37 +162,12 @@ export function useGameController() {
     maybeScheduleAiTurn(state)
   }
 
-  function tryPlayDrawnCard(state: GameState, playerIndex: number, drawnCard: Card): GameState {
-    const top = topCard(state)
-    if (top && playable(drawnCard, top)) {
-      const player = state.players[playerIndex]
-      const cardIndex = player.hand.length - 1
-      const chosenColor = isWild(drawnCard) ? AI.chooseColor(player.hand) : null
-      const result = Game.playCard(state, playerIndex, cardIndex, chosenColor)
-      if (result.ok) return result.state
-      return passOrKeep(state, playerIndex)
-    }
-    return passOrKeep(state, playerIndex)
-  }
-
-  function passOrKeep(state: GameState, playerIndex: number): GameState {
-    const result = Game.pass(state, playerIndex)
-    return result.ok ? result.state : state
-  }
-
-  function drawAndPass(state: GameState, playerIndex: number): GameState {
-    const drawResult = Game.drawCard(state, playerIndex)
-    if (drawResult.ok) {
-      const passResult = Game.pass(drawResult.state, playerIndex)
-      return passResult.ok ? passResult.state : drawResult.state
-    }
-    return state
-  }
-
   return {
     gameState,
     phase,
     playerName,
+    mode,
+    lastRanked,
     startGame,
     restartGame,
     quitToLobby,
