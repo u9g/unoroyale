@@ -65,6 +65,12 @@ on the server. `src/ranked.ts` keeps the Vue/Capacitor half.
 `engine/redact.ts` is what the server sends through before writing to a socket.
 Raw `GameState` contains every hand and the deck order.
 
+Ranked play is online-only: `src/online.ts` opens the match socket and
+`gameController` forwards intents to it instead of running the engine. **The
+server owns trophies** — the local profile is a cache of `GET /me`, so never
+write trophies from a local calculation in ranked. Casual stays fully local and
+offline. `src/rules.md` is the in-app Game Info and states the online-only rule.
+
 ## Screenshot Automation
 
 `scripts/take-screenshots.mjs` uses Playwright to inject crafted game states and capture App Store screenshots at iPhone, iPad, and desktop resolutions. Screenshots auto-commit via the pre-commit hook.

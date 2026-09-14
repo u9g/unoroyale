@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import type { Card, Color } from './engine/card'
 import type { GameState } from './engine/gameState'
 import { topCard, updatePlayer } from './engine/gameState'
@@ -8,7 +8,9 @@ import { playable } from './engine/rules'
 import { track } from './stats'
 import { pickNames } from './names'
 import type { RankedResult } from './ranked'
-import { applyResult, profile, saveProfile, skillForTrophies } from './ranked'
+import { ROOMS, profile, saveProfile } from './ranked'
+import type { OnlineMatch, ServerResult } from './online'
+import { fetchServerProfile, startOnlineMatch } from './online'
 
 export type Mode = 'casual' | 'ranked'
 export const RANKED_PLAYERS = 2
@@ -23,6 +25,12 @@ export function useGameController() {
   const playerCount = ref(Game.MAX_PLAYERS)
   const mode = ref<Mode>('casual')
   const lastRanked = ref<RankedResult | null>(null)
+  // Set while a ranked match is being played on the server
+  let online: OnlineMatch | null = null
+  let stopWatching: (() => void) | null = null
+  // Set when the player walks out: the result still has to be banked, but they
+  // have already left the table and should not be dragged back to it
+  let abandoned = false
   const instantCpu = ref(localStorage.getItem('uno_instant_cpu') === 'true')
   let aiTimer: ReturnType<typeof setTimeout> | null = null
   let startedAt = 0
@@ -39,7 +47,6 @@ export function useGameController() {
   function endGame(state: GameState) {
     phase.value = 'game_over'
     const won = state.finished[0] === 0
-    if (mode.value === 'ranked') settleRanked(won)
     track({
       event: 'finished',
       players: state.players.length,
@@ -50,45 +57,120 @@ export function useGameController() {
     })
   }
 
-  function settleRanked(won: boolean) {
-    const result = applyResult(profile.value, won)
-    lastRanked.value = result
-    saveProfile(result.profile)
+  /** Mirrors a server-settled result into the local profile, which the UI reads. */
+  async function applyServerResult(result: ServerResult) {
+    if (abandoned) {
+      await saveProfile({
+        ...profile.value,
+        trophies: result.trophies,
+        best: Math.max(profile.value.best, result.trophies),
+        losses: profile.value.losses + 1,
+      })
+      closeSocket()
+      return
+    }
+
+    lastRanked.value = {
+      profile: { ...profile.value, trophies: result.trophies, best: Math.max(profile.value.best, result.trophies) },
+      delta: result.delta,
+      promoted: result.promoted ? ROOMS.find(r => r.name === result.promoted) ?? null : null,
+      floored: result.floored,
+    }
+    phase.value = 'game_over'
+    await saveProfile({
+      ...profile.value,
+      trophies: result.trophies,
+      best: Math.max(profile.value.best, result.trophies),
+      wins: profile.value.wins + (result.won ? 1 : 0),
+      losses: profile.value.losses + (result.won ? 0 : 1),
+    })
+    track({
+      event: 'finished',
+      players: 2,
+      winner: result.won ? 'human' : 'ai',
+      duration_s: Math.round((Date.now() - startedAt) / 1000),
+      mode: 'ranked',
+      trophies: result.trophies,
+    })
+  }
+
+  /** The server owns trophies; the local profile is a cache of what it says. */
+  async function syncFromServer(): Promise<void> {
+    const server = await fetchServerProfile()
+    if (!server || server.trophies === profile.value.trophies) return
+    await saveProfile({ ...profile.value, trophies: server.trophies, best: Math.max(profile.value.best, server.trophies) })
+  }
+
+  async function beginOnlineGame(name: string) {
+    const match = await startOnlineMatch(name)
+    online = match
+    abandoned = false
+    mode.value = 'ranked'
+    playerCount.value = RANKED_PLAYERS
+    lastRanked.value = null
+    startedAt = Date.now()
+    track({ event: 'started', players: RANKED_PLAYERS, mode: 'ranked', trophies: profile.value.trophies })
+
+    stopWatching = watch([match.state, match.result], ([state, result]) => {
+      if (state) gameState.value = state
+      if (result) void applyServerResult(result)
+    }, { immediate: true })
+
+    phase.value = 'playing'
+  }
+
+  function endOnlineGame(resign: boolean) {
+    if (!online) return
+    // The server only learns a match was abandoned if the client says so, and
+    // the socket has to stay open long enough to hear what it cost
+    if (resign && !lastRanked.value) {
+      abandoned = true
+      online.send({ t: 'resign' })
+      setTimeout(() => {
+        if (abandoned) void syncFromServer().finally(closeSocket)
+      }, 2000)
+      return
+    }
+    closeSocket()
+  }
+
+  function closeSocket() {
+    abandoned = false
+    online?.close()
+    online = null
+    stopWatching?.()
+    stopWatching = null
   }
 
   function newCasualGame(name: string, count: number): GameState {
     return Game.newGame(name, count, { aiNames: pickNames(name, count - 1) })
   }
 
-  function newRankedGame(): GameState {
-    return Game.newGame(playerName.value, RANKED_PLAYERS, {
-      aiSkill: skillForTrophies(profile.value.trophies),
-      aiNames: pickNames(playerName.value, RANKED_PLAYERS - 1),
-    })
-  }
-
-  function startGame(name: string, count: number, gameMode: Mode = 'casual') {
+  async function startGame(name: string, count: number, gameMode: Mode = 'casual') {
     playerName.value = name
     mode.value = gameMode
     playerCount.value = gameMode === 'ranked' ? RANKED_PLAYERS : count
-    beginGame(gameMode === 'ranked' ? newRankedGame() : newCasualGame(name, count))
+    if (gameMode === 'ranked') return beginOnlineGame(name)
+    beginGame(newCasualGame(name, count))
   }
 
   function quitToLobby() {
     if (aiTimer) clearTimeout(aiTimer)
     // Walking out of a ranked match still costs the trophies, so quitting is not an escape
-    if (mode.value === 'ranked' && phase.value === 'playing') settleRanked(false)
+    endOnlineGame(phase.value === 'playing')
     gameState.value = null
     phase.value = 'lobby'
   }
 
-  function restartGame() {
+  async function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
-    if (mode.value === 'ranked' && phase.value === 'playing') settleRanked(false)
-    beginGame(mode.value === 'ranked' ? newRankedGame() : newCasualGame(playerName.value, playerCount.value))
+    endOnlineGame(phase.value === 'playing')
+    if (mode.value === 'ranked') return beginOnlineGame(playerName.value)
+    beginGame(newCasualGame(playerName.value, playerCount.value))
   }
 
   function playCardAction(cardIndex: number, chosenColor?: Color | null) {
+    if (online) return online.send({ t: 'play', cardIndex, color: chosenColor ?? null })
     if (!gameState.value) return
     const result = Game.playCard(gameState.value, 0, cardIndex, chosenColor)
     if (result.ok) {
@@ -101,6 +183,10 @@ export function useGameController() {
   }
 
   function drawCardAction(): Card | null {
+    if (online) {
+      online.send({ t: 'draw' })
+      return null
+    }
     if (!gameState.value) return null
     const result = Game.drawCard(gameState.value, 0)
     if (result.ok) {
@@ -125,6 +211,7 @@ export function useGameController() {
   }
 
   function sayUnoAction() {
+    if (online) return online.send({ t: 'one' })
     if (!gameState.value) return
     const result = Game.sayUno(gameState.value, 0)
     if (result.ok) {
@@ -133,6 +220,9 @@ export function useGameController() {
   }
 
   function reorderHand(from: number, to: number) {
+    // Hand order is the client's business; the server addresses cards by index,
+    // so a reorder would desync it
+    if (online) return
     if (!gameState.value) return
     const state = gameState.value
     const player = state.players[0]
@@ -182,6 +272,7 @@ export function useGameController() {
     sayUno: sayUnoAction,
     reorderHand,
     instantCpu,
+    syncFromServer,
     setInstantCpu(enabled: boolean) {
       instantCpu.value = enabled
       localStorage.setItem('uno_instant_cpu', String(enabled))
