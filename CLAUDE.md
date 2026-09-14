@@ -43,3 +43,22 @@ Player actions call gameController methods → engine computes new immutable sta
 ## Screenshot Automation
 
 `scripts/take-screenshots.mjs` uses Playwright to inject crafted game states and capture App Store screenshots at iPhone, iPad, and desktop resolutions. Screenshots auto-commit via the pre-commit hook.
+
+## Trying a Branch on One Phone
+
+`npm run ota:try` pushes HEAD to the `ota-try` branch, waits for CI to publish its bundle, and pins the device in `git config unoroyale.deviceId` to it in uno-stats. `npm run ota:try -- off` unpins and the phone follows `main` again. The lobby shows an `OTA <sha>` chip on that device, linked to the commit, so you can confirm which bundle actually took.
+
+## Remote Debugging
+
+A pinned phone can be driven from the CLI with no cable. uno-stats exposes `/debug/ws`, a `DebugRelay` durable object that pipes messages between the phone and a CLI socket authenticated with `DEBUG_KEY`.
+
+The client lives on the `debug-bridge` branch and **never merges to main**: it evals arbitrary JS off the socket, which is a guideline 2.5.2 risk in an App Store build. Kept as a branch, it only ever reaches the one pinned phone.
+
+```bash
+cd ~/code/unoroyale-debug && git rebase origin/main && npm run ota:try
+node scripts/dbg.mjs 'return document.title'   # after opening the app
+```
+
+The app must be in the foreground — iOS suspends the webview on background, killing the socket, and the client reconnects 3s after any close.
+
+Two things measured this way that are easy to misread as app bugs: iOS Low Power Mode pins the webview to a hard 30Hz the web layer cannot opt out of, and `animateDeal` transitions `left`/`top`/`width`/`height`, so the deal costs layout and paint on every frame.
