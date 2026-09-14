@@ -36,7 +36,7 @@ const DEVICES = [
   { name: 'iPad-Landscape',   w: 1376, h: 1032, dpr: 2, mobile: false }, // 2752x2064  (iPad Pro 13" landscape)
   { name: 'Desktop',          w: 1440, h: 900,  dpr: 2, mobile: false }, // 2880x1800  (MacBook-style)
   { name: 'Android',          w: 414,  h: 736,  dpr: 3, mobile: true  }, // 1242x2208  (Play phone screenshots, exactly 9:16)
-  { name: 'Android-Tablet',   w: 800,  h: 1280, dpr: 2, mobile: false }, // 1600x2560  (Play tablet screenshots)
+  { name: 'Android-Tablet',   w: 720,  h: 1280, dpr: 2, mobile: false }, // 1440x2560  (Play tablet screenshots, exactly 9:16)
 ];
 
 // ---------------------------------------------------------------------------
