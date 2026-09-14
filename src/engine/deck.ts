@@ -1,4 +1,6 @@
 import type { Card, Color } from './card'
+import type { Rng } from './rng'
+import { defaultRng } from './rng'
 
 const COLORS: Color[] = ['red', 'blue', 'green', 'yellow']
 const ACTION_VALUES = ['skip', 'reverse', 'draw_two'] as const
@@ -38,10 +40,10 @@ export function newDeck(): Card[] {
   return coloredCards
 }
 
-export function shuffle(cards: Card[]): Card[] {
+export function shuffle(cards: Card[], rng: Rng = defaultRng): Card[] {
   const shuffled = [...cards]
   for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
+    const j = Math.floor(rng() * (i + 1))
     ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
   }
   return shuffled
@@ -51,8 +53,9 @@ export function draw(pile: Card[], count: number): [Card[], Card[]] {
   return [pile.slice(0, count), pile.slice(count)]
 }
 
-export function reshuffleDiscard(discardPile: Card[]): Card[] {
+export function reshuffleDiscard(discardPile: Card[], rng: Rng = defaultRng): Card[] {
   return shuffle(
-    discardPile.map(card => ({ ...card, chosenColor: null }))
+    discardPile.map(card => ({ ...card, chosenColor: null })),
+    rng
   )
 }
