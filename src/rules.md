@@ -65,11 +65,33 @@ If you have no playable cards (or choose not to play), click the draw pile to dr
 
 Note: Draw penalties are dealt automatically. The receiving player does **not** lose their turn - they draw the cards and then play normally.
 
+## Ranked Mode
+
+Ranked is a one-on-one ladder through six rooms. Every match is you against a single opponent, and every result moves your trophy count:
+
+- **Win: +30 trophies. Loss: -30 trophies.**
+- Trophies can never fall below the floor of the room you have reached, so a losing streak cannot demote you out of a room.
+- Quitting or restarting a ranked match in progress counts as a loss.
+- The more trophies you hold, the sharper your opponents play — see AI Behavior below.
+
+| Room | Trophies |
+|-------|----------|
+| The Parlour | 0 |
+| Velvet Room | 300 |
+| Gilded Hall | 600 |
+| Crown Court | 900 |
+| Royal Vault | 1200 |
+| Sovereign's Table | 1500 |
+
+Your **ranked name** is chosen once, the first time you play a ranked match, and is bound to your install. Ranked names are 3-30 letters, numbers or underscores, and are unique — a name another player already holds is refused while you pick another. There is no rename: it is the name real opponents will see. If the name cannot be registered — no connection, say — the match still starts and the name is claimed the next time you play.
+
+Casual mode is unranked, leaves your trophies alone, uses whatever name you type, and is where 3- and 4-player tables live.
+
 ## Calling ONE
 
 The ONE button is always visible during play. You must press it **before** playing your second-to-last card. If you play down to 0 cards without having called ONE, you draw 2 penalty cards instead of winning.
 
-AI players call ONE automatically when they have 2 cards.
+AI players call ONE when they have 2 cards — though weaker opponents forget, and take the penalty for it.
 
 ## Winning
 
@@ -93,10 +115,16 @@ Draw Two and Wild +4 cards **cannot** be stacked. When a +2 or +4 is played agai
 
 ## AI Behavior
 
-The AI opponents play with a simple strategy:
+Every opponent has a skill rating. Casual games use a middling one; in Ranked it rises with your trophy count, so the ladder gets harder as you climb.
 
-- They prioritize **Draw Two** (highest), then **Skip**, then **high number cards**, then **Reverse**
-- They save **Wild** and **Wild +4** cards for last (lowest priority)
-- When choosing a color for wilds, they pick the color they hold the most of
-- If they have no playable card, they draw and immediately play the drawn card if possible
-- AI turns are delayed 0.8-1.5 seconds to feel more natural
+A **sharp** opponent:
+
+- Plays **Draw Two**, **Skip** and (heads-up) **Reverse** on sight, for the extra turn they buy
+- Dumps cards from the colors it holds least of, keeping the rest of its hand chainable
+- Holds **Wild** and **Wild +4** until it is stuck, or until you are one card from going out
+- Picks the color it holds the most of, steering away from colors you have just played
+- Never forgets to call ONE
+
+A **careless** opponent plays a random legal card roughly a third of the time, burns wilds the moment it can, picks colors at random, and often forgets to call ONE.
+
+AI turns are delayed 0.8-1.5 seconds to feel more natural.

@@ -8,6 +8,8 @@ export interface Player {
   type: PlayerType
   hand: Card[]
   saidUno: boolean
+  /** AI only: strength from 0 (careless) to 1 (sharp) */
+  skill?: number
 }
 
 export function handSize(player: Player): number {

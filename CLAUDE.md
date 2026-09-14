@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Card Royale (formerly UNO Royale; renamed for App Store Guideline 4.1 compliance — the call-out is "ONE!", card backs show ♛) — a Vue 3 + TypeScript card-shedding game with 1–3 AI opponents, wrapped as an iOS app via Capacitor. Fully offline-capable with bundled assets. Internal identifiers (sayUno, uno-btn, bundle id dev.u9g.unoroyale) intentionally keep the old name.
+Card Royale (formerly UNO Royale; renamed for App Store Guideline 4.1 compliance — the call-out is "ONE!", card backs show ♛) — a Vue 3 + TypeScript card-shedding game with 1–3 AI opponents, wrapped as an iOS app via Capacitor. Two modes: a heads-up ranked trophy ladder and a casual 2–4 player table. Fully offline-capable with bundled assets. Internal identifiers (sayUno, uno-btn, bundle id dev.u9g.unoroyale) intentionally keep the old name.
 
 ## Commands
 
@@ -27,7 +27,15 @@ npm run cap:open         # Open iOS project in Xcode
 
 ### Engine (`src/engine/`)
 
-All game logic lives here as **pure, immutable functions** — every function returns a new state object, never mutates. Uses a Result pattern: `{ ok: true; state } | { ok: false; error }`. Modules: `game.ts` (state transitions), `gameState.ts` (GameState interface), `rules.ts` (playability), `card.ts` (card types via discriminated unions), `deck.ts` (deck ops), `ai.ts` (AI strategy), `player.ts` (player utilities).
+All game logic lives here as **pure, immutable functions** — every function returns a new state object, never mutates. Uses a Result pattern: `{ ok: true; state } | { ok: false; error }`. Modules: `game.ts` (state transitions), `gameState.ts` (GameState interface), `rules.ts` (playability), `card.ts` (card types via discriminated unions), `deck.ts` (deck ops), `ai.ts` (AI strategy and full AI turns), `skill.ts` (difficulty levers), `player.ts` (player utilities), `rng.ts` (injectable randomness), `selfPlay.ts` (headless AI-vs-AI matches).
+
+Randomness is injected: every function that shuffles or rolls takes an `Rng` defaulting to `Math.random`, so `skill.test.ts` can replay thousands of seeded matches and assert that higher skill wins more.
+
+### Ranked (`src/ranked.ts`)
+
+Trophies, rooms (the ladder tiers — never "arenas"), and the trophy→skill curve. Each room also carries the style tokens for its result card, spread onto the overlay as CSS custom properties by `cardVars`. The profile persists through Capacitor Preferences under `ranked_profile`; `version` exists so the profile can be migrated if trophies ever move server-side.
+
+Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (uno-stats repo) and cached under `ranked_name`. The claim is idempotent server-side, so a failed or offline claim just retries at the next ranked match — it never blocks play, which keeps the app usable with no network.
 
 ### UI Layer
 

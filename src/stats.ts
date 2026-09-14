@@ -5,8 +5,8 @@ import { bundleVersion } from './updater'
 export const STATS_URL: string | undefined = import.meta.env.VITE_STATS_URL
 
 type GameEvent =
-  | { event: 'started'; players: number }
-  | { event: 'finished'; players: number; winner: 'human' | 'ai'; duration_s: number }
+  | { event: 'started'; players: number; mode: string; trophies: number }
+  | { event: 'finished'; players: number; winner: 'human' | 'ai'; duration_s: number; mode: string; trophies: number }
 
 export function track(data: GameEvent) {
   if (!STATS_URL) return

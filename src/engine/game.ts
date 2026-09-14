@@ -6,9 +6,12 @@ import { handSize, removeCardAt, addCards } from './player'
 import type { GameState } from './gameState'
 import { topCard, updatePlayer, nextPlayerIndex, recordPlay, advanceTurn } from './gameState'
 import { playable } from './rules'
+import type { Rng } from './rng'
+import { defaultRng, pick } from './rng'
 import namesCsv from '../names.csv?raw'
 
 const HAND_SIZE = 7
+const DEFAULT_AI_SKILL = 0.6
 export const MIN_PLAYERS = 2
 export const MAX_PLAYERS = 4
 
@@ -21,24 +24,38 @@ const ALL_NAMES: string[] = namesCsv
     return [girl?.trim(), boy?.trim()].filter((n): n is string => !!n)
   })
 
-function pickRandomNames(exclude: string, count: number): string[] {
+function pickRandomNames(exclude: string, count: number, rng: Rng): string[] {
   const available = ALL_NAMES.filter(n => n.toLowerCase() !== exclude.toLowerCase())
   const picked: string[] = []
   for (let i = 0; i < count; i++) {
-    const idx = Math.floor(Math.random() * available.length)
+    const idx = Math.floor(rng() * available.length)
     picked.push(available[idx])
     available.splice(idx, 1)
   }
   return picked
 }
 
-export function newGame(playerName: string, playerCount: number = MAX_PLAYERS): GameState {
-  let deck = Deck.shuffle(Deck.newDeck())
+export interface NewGameOptions {
+  rng?: Rng
+  /** AI strength, 0 (careless) to 1 (sharp); see engine/skill.ts */
+  aiSkill?: number | number[]
+  aiNames?: string[]
+}
 
-  const aiNames = pickRandomNames(playerName, playerCount - 1)
+export function newGame(
+  playerName: string,
+  playerCount: number = MAX_PLAYERS,
+  options: NewGameOptions = {}
+): GameState {
+  const rng = options.rng ?? defaultRng
+  let deck = Deck.shuffle(Deck.newDeck(), rng)
+
+  const aiNames = options.aiNames ?? pickRandomNames(playerName, playerCount - 1, rng)
+  const skillOf = (i: number): number =>
+    Array.isArray(options.aiSkill) ? options.aiSkill[i] ?? DEFAULT_AI_SKILL : options.aiSkill ?? DEFAULT_AI_SKILL
   const players: Player[] = [
     { id: 0, name: playerName, type: 'human', hand: [], saidUno: false },
-    ...aiNames.map((name, i): Player => ({ id: i + 1, name, type: 'ai', hand: [], saidUno: false })),
+    ...aiNames.map((name, i): Player => ({ id: i + 1, name, type: 'ai', hand: [], saidUno: false, skill: skillOf(i) })),
   ]
 
   // Deal hands
@@ -50,7 +67,7 @@ export function newGame(playerName: string, playerCount: number = MAX_PLAYERS): 
   }
 
   // Draw starting card (no Wild Draw Four allowed)
-  const [firstCard, remainingDeck] = drawStartingCard(deck)
+  const [firstCard, remainingDeck] = drawStartingCard(deck, rng)
   deck = remainingDeck
 
   const state: GameState = {
@@ -66,14 +83,15 @@ export function newGame(playerName: string, playerCount: number = MAX_PLAYERS): 
     recentPlays: [],
   }
 
-  return applyOpeningCard(state, firstCard)
+  return applyOpeningCard(state, firstCard, rng)
 }
 
 export function playCard(
   state: GameState,
   playerIndex: number,
   cardIndex: number,
-  chosenColor?: Color | null
+  chosenColor?: Color | null,
+  rng: Rng = defaultRng
 ): { ok: true; state: GameState } | { ok: false; error: string } {
   const player = state.players[playerIndex]
   const card = player.hand[cardIndex]
@@ -85,16 +103,17 @@ export function playCard(
   if (!playable(card, top!)) return { ok: false, error: 'not_playable' }
   if (isWild(card) && !chosenColor) return { ok: false, error: 'must_choose_color' }
 
-  return doPlayCard(state, playerIndex, cardIndex, card, chosenColor ?? null)
+  return doPlayCard(state, playerIndex, cardIndex, card, chosenColor ?? null, rng)
 }
 
 export function drawCard(
   state: GameState,
-  playerIndex: number
+  playerIndex: number,
+  rng: Rng = defaultRng
 ): { ok: true; state: GameState; drawnCard: Card } | { ok: false; error: string } {
   if (state.phase !== 'playing') return { ok: false, error: 'wrong_phase' }
   if (state.currentPlayer !== playerIndex) return { ok: false, error: 'not_your_turn' }
-  return doDrawCard(state, playerIndex)
+  return doDrawCard(state, playerIndex, rng)
 }
 
 export function sayUno(
@@ -118,15 +137,15 @@ export function pass(
 
 // --- Private ---
 
-function drawStartingCard(deck: Card[]): [Card, Card[]] {
+function drawStartingCard(deck: Card[], rng: Rng): [Card, Card[]] {
   const [[card], rest] = Deck.draw(deck, 1)
   if (card.value === 'wild_draw_four') {
-    return drawStartingCard(Deck.shuffle([...rest, card]))
+    return drawStartingCard(Deck.shuffle([...rest, card], rng), rng)
   }
   return [card, rest]
 }
 
-function applyOpeningCard(state: GameState, card: Card): GameState {
+function applyOpeningCard(state: GameState, card: Card, rng: Rng): GameState {
   const currentName = state.players[state.currentPlayer].name
 
   switch (card.value) {
@@ -145,7 +164,7 @@ function applyOpeningCard(state: GameState, card: Card): GameState {
       })
 
     case 'draw_two': {
-      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 2)
+      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 2, rng)
       const targetIdx = state.currentPlayer
       let s = { ...state, drawPile }
       s = updatePlayer(s, targetIdx, p => addCards(p, cards))
@@ -154,7 +173,7 @@ function applyOpeningCard(state: GameState, card: Card): GameState {
 
     case 'wild': {
       const colors: Color[] = ['red', 'blue', 'green', 'yellow']
-      const color = colors[Math.floor(Math.random() * colors.length)]
+      const color = pick(colors, rng)
       const updatedCard: Card = { ...card, chosenColor: color }
       return { ...state, discardPile: [updatedCard], lastAction: `Wild opened - color is ${color}!` }
     }
@@ -169,7 +188,8 @@ function doPlayCard(
   playerIndex: number,
   cardIndex: number,
   card: Card,
-  chosenColor: Color | null
+  chosenColor: Color | null,
+  rng: Rng
 ): { ok: true; state: GameState } {
   const playedCard: Card = isWild(card)
     ? { ...card, chosenColor }
@@ -193,13 +213,13 @@ function doPlayCard(
   if (currentHand === 0) {
     if (!player.saidUno) {
       // Penalty: draw 2, no win
-      s = unoPenalty(s, playerIndex)
+      s = unoPenalty(s, playerIndex, rng)
       const penaltyAction = s.lastAction
-      s = applyCardEffect(s, playedCard, playerIndex)
+      s = applyCardEffect(s, playedCard, playerIndex, rng)
       s = { ...s, unoPenalty: playerIndex === 0, lastAction: `${penaltyAction} ${s.lastAction}` }
       return { ok: true, state: s }
     } else {
-      return { ok: true, state: finishPlayer(s, playerIndex, playedCard) }
+      return { ok: true, state: finishPlayer(s, playerIndex, playedCard, rng) }
     }
   } else {
     // Reset saidUno only when hand has more than 1 card remaining —
@@ -207,12 +227,12 @@ function doPlayCard(
     if (currentHand > 1) {
       s = updatePlayer(s, playerIndex, p => ({ ...p, saidUno: false }))
     }
-    s = applyCardEffect(s, playedCard, playerIndex)
+    s = applyCardEffect(s, playedCard, playerIndex, rng)
     return { ok: true, state: s }
   }
 }
 
-function finishPlayer(state: GameState, playerIndex: number, playedCard: Card): GameState {
+function finishPlayer(state: GameState, playerIndex: number, playedCard: Card, rng: Rng): GameState {
   const player = state.players[playerIndex]
   const finished = [...state.finished, playerIndex]
   const remaining = state.players.map((_, i) => i).filter(i => !finished.includes(i))
@@ -226,7 +246,7 @@ function finishPlayer(state: GameState, playerIndex: number, playedCard: Card): 
     }
   }
 
-  const s = applyCardEffect({ ...state, finished }, playedCard, playerIndex)
+  const s = applyCardEffect({ ...state, finished }, playedCard, playerIndex, rng)
   return { ...s, lastAction: `${player.name} is out in ${ordinal(finished.length)}! ${s.lastAction}` }
 }
 
@@ -234,7 +254,7 @@ export function ordinal(n: number): string {
   return `${n}${['th', 'st', 'nd', 'rd'][n % 10 <= 3 && Math.floor(n / 10) !== 1 ? n % 10 : 0]}`
 }
 
-function applyCardEffect(state: GameState, card: Card, playerIndex: number): GameState {
+function applyCardEffect(state: GameState, card: Card, playerIndex: number, rng: Rng): GameState {
   const player = state.players[playerIndex]
 
   switch (card.value) {
@@ -267,7 +287,7 @@ function applyCardEffect(state: GameState, card: Card, playerIndex: number): Gam
     case 'draw_two': {
       const next = nextPlayerIndex(state)
       const target = state.players[next]
-      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 2)
+      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 2, rng)
       let s = { ...state, drawPile }
       s = updatePlayer(s, next, p => addCards(p, cards))
       return advanceTurn({
@@ -288,7 +308,7 @@ function applyCardEffect(state: GameState, card: Card, playerIndex: number): Gam
       const next = nextPlayerIndex(state)
       const target = state.players[next]
       const color = card.chosenColor
-      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 4)
+      const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 4, rng)
       let s = { ...state, drawPile }
       s = updatePlayer(s, next, p => addCards(p, cards))
       return advanceTurn({
@@ -307,9 +327,10 @@ function applyCardEffect(state: GameState, card: Card, playerIndex: number): Gam
 
 function doDrawCard(
   state: GameState,
-  playerIndex: number
+  playerIndex: number,
+  rng: Rng
 ): { ok: true; state: GameState; drawnCard: Card } {
-  const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 1)
+  const [cards, drawPile] = drawCards(state.drawPile, state.discardPile, 1, rng)
   const drawn = cards[0]
   const player = state.players[playerIndex]
 
@@ -320,7 +341,7 @@ function doDrawCard(
   return { ok: true, state: s, drawnCard: drawn }
 }
 
-function drawCards(drawPile: Card[], discardPile: Card[], count: number): [Card[], Card[]] {
+function drawCards(drawPile: Card[], discardPile: Card[], count: number, rng: Rng): [Card[], Card[]] {
   if (drawPile.length >= count) {
     const [cards, remaining] = Deck.draw(drawPile, count)
     return [cards.map(c => ({ ...c, drawn: true })), remaining]
@@ -328,15 +349,15 @@ function drawCards(drawPile: Card[], discardPile: Card[], count: number): [Card[
 
   // Recycle discard pile (keep top card)
   const [, ...rest] = discardPile
-  const recycled = Deck.reshuffleDiscard(rest)
+  const recycled = Deck.reshuffleDiscard(rest, rng)
   const newPile = [...drawPile, ...recycled]
   const [cards, remaining] = Deck.draw(newPile, Math.min(count, newPile.length))
   return [cards.map(c => ({ ...c, drawn: true })), remaining]
 }
 
-function unoPenalty(state: GameState, playerIndex: number): GameState {
+function unoPenalty(state: GameState, playerIndex: number, rng: Rng): GameState {
   const player = state.players[playerIndex]
-  const [penaltyCards, drawPile] = drawCards(state.drawPile, state.discardPile, 2)
+  const [penaltyCards, drawPile] = drawCards(state.drawPile, state.discardPile, 2, rng)
 
   let s: GameState = { ...state, drawPile }
   s = updatePlayer(s, playerIndex, p => addCards(p, penaltyCards))

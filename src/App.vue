@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { Color } from './engine/card'
 import { isWild } from './engine/card'
 import { useGameController } from './gameController'
+import type { Mode } from './gameController'
 import { MIN_PLAYERS, MAX_PLAYERS } from './engine/game'
-import PlayerCountPicker from './components/PlayerCountPicker.vue'
+import SegmentedPicker from './components/SegmentedPicker.vue'
+import RankedResultOverlay from './components/RankedResultOverlay.vue'
+import { ROOMS, claimName, claimedName, profile, roomFor } from './ranked'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
@@ -24,6 +27,25 @@ const playerNameInput = ref('')
 const PLAYER_COUNT_OPTIONS = [MIN_PLAYERS, MAX_PLAYERS]
 const savedPlayerCount = Number(localStorage.getItem('uno_player_count'))
 const playerCountInput = ref(PLAYER_COUNT_OPTIONS.includes(savedPlayerCount) ? savedPlayerCount : MAX_PLAYERS)
+const MODE_OPTIONS = ['Ranked', 'Casual']
+const modeInput = ref(localStorage.getItem('uno_mode') === 'Casual' ? 'Casual' : 'Ranked')
+const mode = computed((): Mode => (modeInput.value === 'Ranked' ? 'ranked' : 'casual'))
+const room = computed(() => roomFor(profile.value.trophies))
+const nextRoom = computed(() => ROOMS.find(r => r.min > profile.value.trophies) ?? null)
+const roomProgress = computed(() => {
+  const next = nextRoom.value
+  if (!next) return 100
+  const span = next.min - room.value.min
+  return Math.round(((profile.value.trophies - room.value.min) / span) * 100)
+})
+const wonLastRanked = computed(() => controller.gameState.value?.finished[0] === 0)
+const claimError = ref('')
+const claiming = ref(false)
+const startLabel = computed(() => {
+  if (mode.value === 'casual') return 'Start Game'
+  if (claiming.value) return 'Claiming...'
+  return claimedName.value ? 'Find Match' : 'Claim Name & Play'
+})
 const showMenu = ref(false)
 const deviceIdCopied = ref(false)
 async function copyDeviceId() {
@@ -58,13 +80,32 @@ onMounted(() => {
   if (saved) playerNameInput.value = saved
 })
 
-function startGame() {
+async function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
+
+  // Ranked names are claimed once per install; a claim that cannot reach the
+  // server is not fatal, it just retries the next time a match starts
+  if (mode.value === 'ranked' && !claimedName.value) {
+    claiming.value = true
+    const outcome = await claimName(name)
+    claiming.value = false
+    if (outcome === 'taken') {
+      claimError.value = `${name} is already taken — pick another name.`
+      return
+    }
+    if (outcome === 'invalid') {
+      claimError.value = 'Ranked names are 3-30 letters, numbers or underscores.'
+      return
+    }
+  }
+
+  claimError.value = ''
   localStorage.setItem('uno_player_name', name)
   localStorage.setItem('uno_player_count', String(playerCountInput.value))
+  localStorage.setItem('uno_mode', modeInput.value)
   isNewGame.value = true
   gameKey.value++
-  controller.startGame(name, playerCountInput.value)
+  controller.startGame(mode.value === 'ranked' ? claimedName.value || name : name, playerCountInput.value, mode.value)
 }
 
 function handlePlayCard(index: number) {
@@ -186,19 +227,43 @@ function renderMarkdown(md: string): string {
           target="_blank"
           rel="noreferrer"
         >OTA {{ bundleVersion }}</a>
-        <form class="lobby__form" @submit.prevent="startGame">
+        <form :class="['lobby__form', mode === 'ranked' && 'lobby__form--ranked']" @submit.prevent="startGame">
+          <p v-if="mode === 'ranked' && claimedName" class="lobby__claimed">
+            Playing as <strong>{{ claimedName }}</strong>
+          </p>
           <input
+            v-else
             v-model="playerNameInput"
             type="text"
-            placeholder="Enter your name"
+            :placeholder="mode === 'ranked' ? 'Choose your ranked name' : 'Enter your name'"
+            :maxlength="mode === 'ranked' ? 30 : undefined"
             class="lobby__input"
             required
+            @input="claimError = ''"
           />
-          <label class="lobby__players">
-            <PlayerCountPicker v-model="playerCountInput" :options="PLAYER_COUNT_OPTIONS" />
+          <p v-if="claimError" class="lobby__error">{{ claimError }}</p>
+
+          <SegmentedPicker v-model="modeInput" :options="MODE_OPTIONS" class="segmented--wide" />
+
+          <div v-if="mode === 'ranked'" class="room" :style="{ '--room-accent': room.accent }">
+            <div class="room__head">
+              <span class="room__name">{{ room.name }}</span>
+              <span class="room__trophies">{{ profile.trophies }} ♛</span>
+            </div>
+            <div class="room__track">
+              <div class="room__fill" :style="{ width: roomProgress + '%' }" />
+            </div>
+            <span class="room__next">
+              {{ nextRoom ? `${nextRoom.min - profile.trophies} ♛ to ${nextRoom.name}` : 'Top room reached' }}
+            </span>
+          </div>
+
+          <label v-else class="lobby__players">
+            <SegmentedPicker v-model="playerCountInput" :options="PLAYER_COUNT_OPTIONS" />
             <span>players at the table</span>
           </label>
-          <button type="submit" class="lobby__btn">Start Game</button>
+
+          <button type="submit" class="lobby__btn" :disabled="claiming">{{ startLabel }}</button>
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>
@@ -240,7 +305,14 @@ function renderMarkdown(md: string): string {
         @deal-complete="() => {}"
         @menu="showMenu = !showMenu"
       />
-      <GameOverOverlay :placements="placements()" @play-again="newGameRestart" />
+      <RankedResultOverlay
+        v-if="controller.mode.value === 'ranked' && controller.lastRanked.value"
+        :result="controller.lastRanked.value"
+        :won="wonLastRanked"
+        @play-again="newGameRestart"
+        @main-menu="quitToLobby"
+      />
+      <GameOverOverlay v-else :placements="placements()" @play-again="newGameRestart" />
     </template>
 
     <!-- Pause Menu -->
