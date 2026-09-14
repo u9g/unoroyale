@@ -22,7 +22,7 @@ interface TutorialStep {
 const steps: TutorialStep[] = [
   {
     title: 'The Goal',
-    body: 'Be the <strong>first player</strong> to play all the cards in your hand. You play against 3 computer opponents — whoever empties their hand first wins!',
+    body: 'Be the <strong>first player</strong> to play all the cards in your hand. You play against 1 or 3 computer opponents — whoever empties their hand first wins!',
     cards: [
       { color: 'red', value: 7 },
       { color: 'blue', value: 3 },
