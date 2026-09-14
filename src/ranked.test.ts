@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { applyResult, arenaFor, emptyProfile, skillForTrophies, ARENAS } from './ranked'
+import { applyResult, emptyProfile, roomFor, skillForTrophies, ROOMS } from './ranked'
 
 vi.mock('@capacitor/preferences', () => ({
   Preferences: { get: async () => ({ value: null }), set: async () => {} },
@@ -12,26 +12,26 @@ describe('trophies', () => {
     expect(applyResult(start, false).profile.trophies).toBe(470)
   })
 
-  it('never drops below the floor of the arena you are in', () => {
+  it('never drops below the floor of the room you are in', () => {
     const start = { ...emptyProfile(), trophies: 310 }
     const after = applyResult(start, false)
     expect(after.profile.trophies).toBe(300)
     expect(after.delta).toBe(-10)
   })
 
-  it('cannot go negative in the first arena', () => {
+  it('cannot go negative in the first room', () => {
     expect(applyResult(emptyProfile(), false).profile.trophies).toBe(0)
   })
 
-  it('flags a loss that the arena floor cushioned', () => {
+  it('flags a loss that the room floor cushioned', () => {
     expect(applyResult({ ...emptyProfile(), trophies: 310 }, false).floored).toBe(true)
     expect(applyResult({ ...emptyProfile(), trophies: 500 }, false).floored).toBe(false)
     expect(applyResult({ ...emptyProfile(), trophies: 500 }, true).floored).toBe(false)
   })
 
-  it('reports a promotion when a win crosses an arena threshold', () => {
+  it('reports a promotion when a win crosses a room threshold', () => {
     const after = applyResult({ ...emptyProfile(), trophies: 290 }, true)
-    expect(after.promoted?.name).toBe(ARENAS[1].name)
+    expect(after.promoted?.name).toBe(ROOMS[1].name)
     expect(applyResult({ ...emptyProfile(), trophies: 200 }, true).promoted).toBeNull()
   })
 
@@ -44,12 +44,12 @@ describe('trophies', () => {
   })
 })
 
-describe('arenas', () => {
-  it('maps trophies to the highest arena reached', () => {
-    expect(arenaFor(0)).toBe(ARENAS[0])
-    expect(arenaFor(299)).toBe(ARENAS[0])
-    expect(arenaFor(300)).toBe(ARENAS[1])
-    expect(arenaFor(99999)).toBe(ARENAS[ARENAS.length - 1])
+describe('rooms', () => {
+  it('maps trophies to the highest room reached', () => {
+    expect(roomFor(0)).toBe(ROOMS[0])
+    expect(roomFor(299)).toBe(ROOMS[0])
+    expect(roomFor(300)).toBe(ROOMS[1])
+    expect(roomFor(99999)).toBe(ROOMS[ROOMS.length - 1])
   })
 
   it('raises opponent skill with the ladder, within bounds', () => {

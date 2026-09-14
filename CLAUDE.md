@@ -33,7 +33,7 @@ Randomness is injected: every function that shuffles or rolls takes an `Rng` def
 
 ### Ranked (`src/ranked.ts`)
 
-Trophies, arenas, and the trophy→skill curve. The profile persists through Capacitor Preferences under `ranked_profile`; `version` exists so the profile can be migrated if trophies ever move server-side.
+Trophies, rooms (the ladder tiers — never "arenas"), and the trophy→skill curve. Each room also carries the style tokens for its result card, spread onto the overlay as CSS custom properties by `cardVars`. The profile persists through Capacitor Preferences under `ranked_profile`; `version` exists so the profile can be migrated if trophies ever move server-side.
 
 Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (uno-stats repo) and cached under `ranked_name`. The claim is idempotent server-side, so a failed or offline claim just retries at the next ranked match — it never blocks play, which keeps the app usable with no network.
 

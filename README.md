@@ -20,7 +20,7 @@ A single-player card-shedding game built with Vue 3, TypeScript, and Vite. Play 
 
 ## Features
 
-- **Ranked mode** — a heads-up trophy ladder across six arenas, where climbing puts you against sharper opponents, played under a name claimed once per install
+- **Ranked mode** — a heads-up trophy ladder through six rooms, each with its own result card, where climbing puts you against sharper opponents, played under a name claimed once per install
 - Classic card-matching gameplay against 1–3 AI opponents (2–4 players at the table)
 - AI opponents with randomized names from popular US baby names
 - Card drag-and-drop reordering

@@ -7,7 +7,7 @@ import type { Mode } from './gameController'
 import { MIN_PLAYERS, MAX_PLAYERS } from './engine/game'
 import SegmentedPicker from './components/SegmentedPicker.vue'
 import RankedResultOverlay from './components/RankedResultOverlay.vue'
-import { ARENAS, arenaFor, claimName, claimedName, profile } from './ranked'
+import { ROOMS, claimName, claimedName, profile, roomFor } from './ranked'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
@@ -30,13 +30,13 @@ const playerCountInput = ref(PLAYER_COUNT_OPTIONS.includes(savedPlayerCount) ? s
 const MODE_OPTIONS = ['Ranked', 'Casual']
 const modeInput = ref(localStorage.getItem('uno_mode') === 'Casual' ? 'Casual' : 'Ranked')
 const mode = computed((): Mode => (modeInput.value === 'Ranked' ? 'ranked' : 'casual'))
-const arena = computed(() => arenaFor(profile.value.trophies))
-const nextArena = computed(() => ARENAS.find(a => a.min > profile.value.trophies) ?? null)
-const arenaProgress = computed(() => {
-  const next = nextArena.value
+const room = computed(() => roomFor(profile.value.trophies))
+const nextRoom = computed(() => ROOMS.find(r => r.min > profile.value.trophies) ?? null)
+const roomProgress = computed(() => {
+  const next = nextRoom.value
   if (!next) return 100
-  const span = next.min - arena.value.min
-  return Math.round(((profile.value.trophies - arena.value.min) / span) * 100)
+  const span = next.min - room.value.min
+  return Math.round(((profile.value.trophies - room.value.min) / span) * 100)
 })
 const wonLastRanked = computed(() => controller.gameState.value?.finished[0] === 0)
 const claimError = ref('')
@@ -245,16 +245,16 @@ function renderMarkdown(md: string): string {
 
           <SegmentedPicker v-model="modeInput" :options="MODE_OPTIONS" class="segmented--wide" />
 
-          <div v-if="mode === 'ranked'" class="arena" :style="{ '--arena-accent': arena.accent }">
-            <div class="arena__head">
-              <span class="arena__name">{{ arena.name }}</span>
-              <span class="arena__trophies">{{ profile.trophies }} ♛</span>
+          <div v-if="mode === 'ranked'" class="room" :style="{ '--room-accent': room.accent }">
+            <div class="room__head">
+              <span class="room__name">{{ room.name }}</span>
+              <span class="room__trophies">{{ profile.trophies }} ♛</span>
             </div>
-            <div class="arena__track">
-              <div class="arena__fill" :style="{ width: arenaProgress + '%' }" />
+            <div class="room__track">
+              <div class="room__fill" :style="{ width: roomProgress + '%' }" />
             </div>
-            <span class="arena__next">
-              {{ nextArena ? `${nextArena.min - profile.trophies} ♛ to ${nextArena.name}` : 'Top arena reached' }}
+            <span class="room__next">
+              {{ nextRoom ? `${nextRoom.min - profile.trophies} ♛ to ${nextRoom.name}` : 'Top room reached' }}
             </span>
           </div>
 

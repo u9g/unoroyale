@@ -67,14 +67,14 @@ Note: Draw penalties are dealt automatically. The receiving player does **not** 
 
 ## Ranked Mode
 
-Ranked is a one-on-one ladder. Every match is you against a single opponent, and every result moves your trophy count:
+Ranked is a one-on-one ladder through six rooms. Every match is you against a single opponent, and every result moves your trophy count:
 
 - **Win: +30 trophies. Loss: -30 trophies.**
-- Trophies can never fall below the floor of the arena you have reached, so a losing streak cannot demote you out of an arena.
+- Trophies can never fall below the floor of the room you have reached, so a losing streak cannot demote you out of a room.
 - Quitting or restarting a ranked match in progress counts as a loss.
 - The more trophies you hold, the sharper your opponents play — see AI Behavior below.
 
-| Arena | Trophies |
+| Room | Trophies |
 |-------|----------|
 | The Parlour | 0 |
 | Velvet Room | 300 |
