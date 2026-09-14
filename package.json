@@ -11,10 +11,12 @@
     "lint": "eslint src/ && stylelint \"src/**/*.css\"",
     "cap:sync": "npm run build && npx cap sync ios",
     "cap:sync:android": "npm run build && npx cap sync android",
+    "cap:open:android": "npx cap open android",
     "cap:open": "npx cap open ios",
     "screenshots": "node scripts/take-screenshots.mjs",
     "ota:try": "scripts/ota-try.sh",
-    "deploy": "sh scripts/deploy-ios.sh"
+    "deploy": "sh scripts/deploy-ios.sh",
+    "build:android": "sh scripts/build-android.sh"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.0",
