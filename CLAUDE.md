@@ -48,6 +48,29 @@ Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (
 
 Player actions call gameController methods → engine computes new immutable state → Vue ref triggers reactivity → components re-render. localStorage persists player name and instant-CPU-mode preference.
 
+## Match Server (lives in the uno-stats repo)
+
+Ranked matches are decided by a Durable Object in `~/code/uno-stats`, which pulls
+this repo in as a git dependency and imports the engine from it. There is exactly
+one copy of the engine, so the server cannot drift from the client — but that
+means **the engine must stay importable outside Vite**: no `?raw` imports, no app
+assets, no browser globals. Opponent names therefore live in `src/names.ts` here
+and in the server's own list there. After changing the engine, refresh the pin in
+uno-stats (`npm install --save "github:u9g/unoroyale#main"`).
+
+`src/ladder.ts` holds the pure ladder maths (rooms, trophy deltas, floors) and is
+imported by both sides, so a trophy delta is computed identically in the app and
+on the server. `src/ranked.ts` keeps the Vue/Capacitor half.
+
+`engine/redact.ts` is what the server sends through before writing to a socket.
+Raw `GameState` contains every hand and the deck order.
+
+Ranked play is online-only: `src/online.ts` opens the match socket and
+`gameController` forwards intents to it instead of running the engine. **The
+server owns trophies** — the local profile is a cache of `GET /me`, so never
+write trophies from a local calculation in ranked. Casual stays fully local and
+offline. `src/rules.md` is the in-app Game Info and states the online-only rule.
+
 ## Screenshot Automation
 
 `scripts/take-screenshots.mjs` uses Playwright to inject crafted game states and capture App Store screenshots at iPhone, iPad, and desktop resolutions. Screenshots auto-commit via the pre-commit hook.

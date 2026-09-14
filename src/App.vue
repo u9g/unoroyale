@@ -41,9 +41,12 @@ const roomProgress = computed(() => {
 const wonLastRanked = computed(() => controller.gameState.value?.finished[0] === 0)
 const claimError = ref('')
 const claiming = ref(false)
+const startError = ref('')
+const starting = ref(false)
 const startLabel = computed(() => {
   if (mode.value === 'casual') return 'Start Game'
   if (claiming.value) return 'Claiming...'
+  if (starting.value) return 'Finding match...'
   return claimedName.value ? 'Find Match' : 'Claim Name & Play'
 })
 const showMenu = ref(false)
@@ -78,10 +81,13 @@ if (import.meta.env.DEV) {
 onMounted(() => {
   const saved = localStorage.getItem('uno_player_name')
   if (saved) playerNameInput.value = saved
+  // Trophies are the server's to state; this is a cache of its answer
+  void controller.syncFromServer()
 })
 
 async function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
+  startError.value = ''
 
   // Ranked names are claimed once per install; a claim that cannot reach the
   // server is not fatal, it just retries the next time a match starts
@@ -105,7 +111,15 @@ async function startGame() {
   localStorage.setItem('uno_mode', modeInput.value)
   isNewGame.value = true
   gameKey.value++
-  controller.startGame(mode.value === 'ranked' ? claimedName.value || name : name, playerCountInput.value, mode.value)
+  try {
+    starting.value = true
+    await controller.startGame(mode.value === 'ranked' ? claimedName.value || name : name, playerCountInput.value, mode.value)
+  } catch {
+    // Ranked is decided by the server, so there is no offline fallback for it
+    startError.value = 'Ranked needs a connection. Casual works offline.'
+  } finally {
+    starting.value = false
+  }
 }
 
 function handlePlayCard(index: number) {
@@ -239,9 +253,9 @@ function renderMarkdown(md: string): string {
             :maxlength="mode === 'ranked' ? 30 : undefined"
             class="lobby__input"
             required
-            @input="claimError = ''"
+            @input="claimError = ''; startError = ''"
           />
-          <p v-if="claimError" class="lobby__error">{{ claimError }}</p>
+          <p v-if="claimError || startError" class="lobby__error">{{ claimError || startError }}</p>
 
           <SegmentedPicker v-model="modeInput" :options="MODE_OPTIONS" class="segmented--wide" />
 
@@ -263,7 +277,7 @@ function renderMarkdown(md: string): string {
             <span>players at the table</span>
           </label>
 
-          <button type="submit" class="lobby__btn" :disabled="claiming">{{ startLabel }}</button>
+          <button type="submit" class="lobby__btn" :disabled="claiming || starting">{{ startLabel }}</button>
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>

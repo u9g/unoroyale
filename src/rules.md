@@ -67,7 +67,9 @@ Note: Draw penalties are dealt automatically. The receiving player does **not** 
 
 ## Ranked Mode
 
-Ranked is a one-on-one ladder through six rooms. Every match is you against a single opponent, and every result moves your trophy count:
+Ranked is a one-on-one ladder through six rooms, played on the server — it needs
+a connection, and your trophies are held there rather than on your phone. Casual
+works offline, always. Every match is you against a single opponent, and every result moves your trophy count:
 
 - **Win: +30 trophies. Loss: -30 trophies.**
 - Trophies can never fall below the floor of the room you have reached, so a losing streak cannot demote you out of a room.
