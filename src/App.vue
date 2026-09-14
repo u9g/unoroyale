@@ -48,8 +48,8 @@ function closeFeedback() {
 const gameKey = ref(0)
 let pendingWildIndex: number | null = null
 
-// Expose internals for screenshot tooling (dev only)
-if (import.meta.env.DEV) {
+// Exposed unconditionally on the debug branch so the remote bridge can reach app state
+{
   ;(window as any).__app = { controller, choosingColor, isNewGame, showTutorial }
 }
 
