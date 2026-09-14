@@ -94,7 +94,7 @@ async function startGame() {
       return
     }
     if (outcome === 'invalid') {
-      claimError.value = 'Names are 3-16 letters, numbers, spaces, _ or -.'
+      claimError.value = 'Ranked names are 3-30 letters, numbers or underscores.'
       return
     }
   }
@@ -236,6 +236,7 @@ function renderMarkdown(md: string): string {
             v-model="playerNameInput"
             type="text"
             :placeholder="mode === 'ranked' ? 'Choose your ranked name' : 'Enter your name'"
+            :maxlength="mode === 'ranked' ? 30 : undefined"
             class="lobby__input"
             required
             @input="claimError = ''"
