@@ -9,6 +9,7 @@ import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
 import FeedbackSheet from './components/FeedbackSheet.vue'
+import AndroidBetaBanner from './components/AndroidBetaBanner.vue'
 import { snoozeTiltDown, useTiltDown } from './tiltDown'
 import { deviceId } from './deviceId'
 import { bundleVersion } from './updater'
@@ -203,6 +204,7 @@ function renderMarkdown(md: string): string {
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>
         <button type="button" class="lobby__tutorial-btn" @click="showFeedback = true">Give Feedback</button>
+        <AndroidBetaBanner />
       </div>
     </template>
 
