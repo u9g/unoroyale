@@ -8,31 +8,16 @@ import { topCard, updatePlayer, nextPlayerIndex, recordPlay, advanceTurn } from 
 import { playable } from './rules'
 import type { Rng } from './rng'
 import { defaultRng, pick } from './rng'
-import namesCsv from '../names.csv?raw'
 
 const HAND_SIZE = 7
 const DEFAULT_AI_SKILL = 0.6
 export const MIN_PLAYERS = 2
 export const MAX_PLAYERS = 4
 
-const ALL_NAMES: string[] = namesCsv
-  .trim()
-  .split('\n')
-  .slice(1)
-  .flatMap(line => {
-    const [, girl, boy] = line.split(',')
-    return [girl?.trim(), boy?.trim()].filter((n): n is string => !!n)
-  })
-
-function pickRandomNames(exclude: string, count: number, rng: Rng): string[] {
-  const available = ALL_NAMES.filter(n => n.toLowerCase() !== exclude.toLowerCase())
-  const picked: string[] = []
-  for (let i = 0; i < count; i++) {
-    const idx = Math.floor(rng() * available.length)
-    picked.push(available[idx])
-    available.splice(idx, 1)
-  }
-  return picked
+// Callers supply opponent names; these are only a fallback so the engine stays
+// free of app assets and runs unchanged inside a Worker
+function fallbackNames(count: number): string[] {
+  return Array.from({ length: count }, (_, i) => `Player ${i + 2}`)
 }
 
 export interface NewGameOptions {
@@ -50,7 +35,7 @@ export function newGame(
   const rng = options.rng ?? defaultRng
   let deck = Deck.shuffle(Deck.newDeck(), rng)
 
-  const aiNames = options.aiNames ?? pickRandomNames(playerName, playerCount - 1, rng)
+  const aiNames = options.aiNames ?? fallbackNames(playerCount - 1)
   const skillOf = (i: number): number =>
     Array.isArray(options.aiSkill) ? options.aiSkill[i] ?? DEFAULT_AI_SKILL : options.aiSkill ?? DEFAULT_AI_SKILL
   const players: Player[] = [

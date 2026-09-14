@@ -48,6 +48,22 @@ Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (
 
 Player actions call gameController methods → engine computes new immutable state → Vue ref triggers reactivity → components re-render. localStorage persists player name and instant-CPU-mode preference.
 
+## Match Server (`worker/`)
+
+`card-royale-match` — a Cloudflare Worker with one Durable Object per ranked
+match. It imports `../src/engine` directly, so the engine has exactly one copy
+and the server cannot drift from the client. The engine is therefore kept free
+of app assets and Vite-only syntax (opponent names come from `src/names.ts` in
+the app and `worker/src/botNames.ts` on the server).
+
+`src/ladder.ts` holds the pure ladder maths (rooms, trophy deltas, floors) and is
+imported by both sides, so a trophy delta is computed identically in the app and
+on the server. `src/ranked.ts` keeps the Vue/Capacitor half.
+
+Every state the server sends is passed through `engine/redact.ts` first. Do not
+add a path that writes raw `GameState` to a socket — it contains every hand and
+the deck order.
+
 ## Screenshot Automation
 
 `scripts/take-screenshots.mjs` uses Playwright to inject crafted game states and capture App Store screenshots at iPhone, iPad, and desktop resolutions. Screenshots auto-commit via the pre-commit hook.

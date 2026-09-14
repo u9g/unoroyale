@@ -6,6 +6,7 @@ import * as Game from './engine/game'
 import * as AI from './engine/ai'
 import { playable } from './engine/rules'
 import { track } from './stats'
+import { pickNames } from './names'
 import type { RankedResult } from './ranked'
 import { applyResult, profile, saveProfile, skillForTrophies } from './ranked'
 
@@ -55,9 +56,14 @@ export function useGameController() {
     saveProfile(result.profile)
   }
 
+  function newCasualGame(name: string, count: number): GameState {
+    return Game.newGame(name, count, { aiNames: pickNames(name, count - 1) })
+  }
+
   function newRankedGame(): GameState {
     return Game.newGame(playerName.value, RANKED_PLAYERS, {
       aiSkill: skillForTrophies(profile.value.trophies),
+      aiNames: pickNames(playerName.value, RANKED_PLAYERS - 1),
     })
   }
 
@@ -65,7 +71,7 @@ export function useGameController() {
     playerName.value = name
     mode.value = gameMode
     playerCount.value = gameMode === 'ranked' ? RANKED_PLAYERS : count
-    beginGame(gameMode === 'ranked' ? newRankedGame() : Game.newGame(name, count))
+    beginGame(gameMode === 'ranked' ? newRankedGame() : newCasualGame(name, count))
   }
 
   function quitToLobby() {
@@ -79,7 +85,7 @@ export function useGameController() {
   function restartGame() {
     if (aiTimer) clearTimeout(aiTimer)
     if (mode.value === 'ranked' && phase.value === 'playing') settleRanked(false)
-    beginGame(mode.value === 'ranked' ? newRankedGame() : Game.newGame(playerName.value, playerCount.value))
+    beginGame(mode.value === 'ranked' ? newRankedGame() : newCasualGame(playerName.value, playerCount.value))
   }
 
   function playCardAction(cardIndex: number, chosenColor?: Color | null) {
