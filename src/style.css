@@ -2005,3 +2005,16 @@ body {
     font-size: 0.7rem;
   }
 }
+
+/* ---- Build chip ---- */
+.build-chip {
+  margin: -0.5rem 0 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(59,130,246,0.25);
+  color: #93c5fd;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}

@@ -11,9 +11,14 @@ import TutorialOverlay from './components/TutorialOverlay.vue'
 import FeedbackSheet from './components/FeedbackSheet.vue'
 import { snoozeTiltDown, useTiltDown } from './tiltDown'
 import { deviceId } from './deviceId'
+import { bundleVersion } from './updater'
 import rulesContent from './rules.md?raw'
 
 const controller = useGameController()
+
+// Only my own phone gets the build chip; ota-try.sh pins it to a bundle and this says which one took
+const MY_DEVICE_ID = 'af44f784-965f-496f-b0eb-b86e6c810399'
+const showBuildChip = deviceId === MY_DEVICE_ID
 
 const playerNameInput = ref('')
 const PLAYER_COUNT_OPTIONS = [MIN_PLAYERS, MAX_PLAYERS]
@@ -174,6 +179,13 @@ function renderMarkdown(md: string): string {
     <template v-if="controller.phase.value === 'lobby'">
       <div class="lobby">
         <h1 class="lobby__title">Card Royale</h1>
+        <a
+          v-if="showBuildChip"
+          class="build-chip"
+          :href="`https://github.com/u9g/unoroyale/commit/${bundleVersion}`"
+          target="_blank"
+          rel="noreferrer"
+        >OTA {{ bundleVersion }}</a>
         <form class="lobby__form" @submit.prevent="startGame">
           <input
             v-model="playerNameInput"
