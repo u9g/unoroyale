@@ -19,6 +19,12 @@ describe('trophies', () => {
     expect(applyResult(emptyProfile(), false).profile.trophies).toBe(0)
   })
 
+  it('flags a loss that the arena floor cushioned', () => {
+    expect(applyResult({ ...emptyProfile(), trophies: 310 }, false).floored).toBe(true)
+    expect(applyResult({ ...emptyProfile(), trophies: 500 }, false).floored).toBe(false)
+    expect(applyResult({ ...emptyProfile(), trophies: 500 }, true).floored).toBe(false)
+  })
+
   it('reports a promotion when a win crosses an arena threshold', () => {
     const after = applyResult({ ...emptyProfile(), trophies: 290 }, true)
     expect(after.promoted?.name).toBe(ARENAS[1].name)

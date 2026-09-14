@@ -53,6 +53,8 @@ export interface RankedResult {
   profile: RankedProfile
   delta: number
   promoted: Arena | null
+  /** The loss was cushioned by the arena floor */
+  floored: boolean
 }
 
 export function applyResult(current: RankedProfile, won: boolean): RankedResult {
@@ -72,6 +74,7 @@ export function applyResult(current: RankedProfile, won: boolean): RankedResult 
     },
     delta: trophies - current.trophies,
     promoted: after.min > before.min ? after : null,
+    floored: raw < trophies,
   }
 }
 

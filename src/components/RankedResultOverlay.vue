@@ -27,8 +27,8 @@ const arena = arenaFor(props.result.profile.trophies)
       <p class="ranked-result__total">{{ result.profile.trophies }} trophies — {{ arena.name }}</p>
 
       <p v-if="result.promoted" class="ranked-result__promo">Promoted to {{ result.promoted.name }}!</p>
-      <p v-else-if="result.delta === 0 && !won" class="ranked-result__promo">
-        Arena floor held — no trophies lost.
+      <p v-else-if="result.floored" class="ranked-result__promo">
+        {{ arena.name }} floor held you at {{ result.profile.trophies }} ♛.
       </p>
 
       <button class="btn-play-again" @click="emit('playAgain')">Next Match</button>
