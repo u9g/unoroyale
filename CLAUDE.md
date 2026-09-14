@@ -48,21 +48,22 @@ Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (
 
 Player actions call gameController methods → engine computes new immutable state → Vue ref triggers reactivity → components re-render. localStorage persists player name and instant-CPU-mode preference.
 
-## Match Server (`worker/`)
+## Match Server (lives in the uno-stats repo)
 
-`card-royale-match` — a Cloudflare Worker with one Durable Object per ranked
-match. It imports `../src/engine` directly, so the engine has exactly one copy
-and the server cannot drift from the client. The engine is therefore kept free
-of app assets and Vite-only syntax (opponent names come from `src/names.ts` in
-the app and `worker/src/botNames.ts` on the server).
+Ranked matches are decided by a Durable Object in `~/code/uno-stats`, which pulls
+this repo in as a git dependency and imports the engine from it. There is exactly
+one copy of the engine, so the server cannot drift from the client — but that
+means **the engine must stay importable outside Vite**: no `?raw` imports, no app
+assets, no browser globals. Opponent names therefore live in `src/names.ts` here
+and in the server's own list there. After changing the engine, refresh the pin in
+uno-stats (`npm install --save "github:u9g/unoroyale#main"`).
 
 `src/ladder.ts` holds the pure ladder maths (rooms, trophy deltas, floors) and is
 imported by both sides, so a trophy delta is computed identically in the app and
 on the server. `src/ranked.ts` keeps the Vue/Capacitor half.
 
-Every state the server sends is passed through `engine/redact.ts` first. Do not
-add a path that writes raw `GameState` to a socket — it contains every hand and
-the deck order.
+`engine/redact.ts` is what the server sends through before writing to a socket.
+Raw `GameState` contains every hand and the deck order.
 
 ## Screenshot Automation
 

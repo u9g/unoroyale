@@ -28,4 +28,3 @@ ios/App/App/public
 ios/App/App.xcodeproj/xcuserdata
 ios/App/App.xcodeproj/project.xcworkspace/xcuserdata
 ios/build
-worker/.wrangler
