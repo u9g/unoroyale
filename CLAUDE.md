@@ -35,6 +35,8 @@ Randomness is injected: every function that shuffles or rolls takes an `Rng` def
 
 Trophies, arenas, and the trophy→skill curve. The profile persists through Capacitor Preferences under `ranked_profile`; `version` exists so the profile can be migrated if trophies ever move server-side.
 
+Ranked names are claimed once per install against `POST {VITE_STATS_URL}/name` (uno-stats repo) and cached under `ranked_name`. The claim is idempotent server-side, so a failed or offline claim just retries at the next ranked match — it never blocks play, which keeps the app usable with no network.
+
 ### UI Layer
 
 - `App.vue` — root component, manages phases: lobby → playing → game_over

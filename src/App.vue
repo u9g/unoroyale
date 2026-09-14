@@ -7,7 +7,7 @@ import type { Mode } from './gameController'
 import { MIN_PLAYERS, MAX_PLAYERS } from './engine/game'
 import SegmentedPicker from './components/SegmentedPicker.vue'
 import RankedResultOverlay from './components/RankedResultOverlay.vue'
-import { ARENAS, arenaFor, profile } from './ranked'
+import { ARENAS, arenaFor, claimName, claimedName, profile } from './ranked'
 import GameBoard from './components/GameBoard.vue'
 import GameOverOverlay from './components/GameOverOverlay.vue'
 import TutorialOverlay from './components/TutorialOverlay.vue'
@@ -39,6 +39,13 @@ const arenaProgress = computed(() => {
   return Math.round(((profile.value.trophies - arena.value.min) / span) * 100)
 })
 const wonLastRanked = computed(() => controller.gameState.value?.finished[0] === 0)
+const claimError = ref('')
+const claiming = ref(false)
+const startLabel = computed(() => {
+  if (mode.value === 'casual') return 'Start Game'
+  if (claiming.value) return 'Claiming...'
+  return claimedName.value ? 'Find Match' : 'Claim Name & Play'
+})
 const showMenu = ref(false)
 const deviceIdCopied = ref(false)
 async function copyDeviceId() {
@@ -73,14 +80,32 @@ onMounted(() => {
   if (saved) playerNameInput.value = saved
 })
 
-function startGame() {
+async function startGame() {
   const name = playerNameInput.value.trim() || 'Player'
+
+  // Ranked names are claimed once per install; a claim that cannot reach the
+  // server is not fatal, it just retries the next time a match starts
+  if (mode.value === 'ranked' && !claimedName.value) {
+    claiming.value = true
+    const outcome = await claimName(name)
+    claiming.value = false
+    if (outcome === 'taken') {
+      claimError.value = `${name} is already taken — pick another name.`
+      return
+    }
+    if (outcome === 'invalid') {
+      claimError.value = 'Names are 3-16 letters, numbers, spaces, _ or -.'
+      return
+    }
+  }
+
+  claimError.value = ''
   localStorage.setItem('uno_player_name', name)
   localStorage.setItem('uno_player_count', String(playerCountInput.value))
   localStorage.setItem('uno_mode', modeInput.value)
   isNewGame.value = true
   gameKey.value++
-  controller.startGame(name, playerCountInput.value, mode.value)
+  controller.startGame(mode.value === 'ranked' ? claimedName.value || name : name, playerCountInput.value, mode.value)
 }
 
 function handlePlayCard(index: number) {
@@ -203,13 +228,19 @@ function renderMarkdown(md: string): string {
           rel="noreferrer"
         >OTA {{ bundleVersion }}</a>
         <form :class="['lobby__form', mode === 'ranked' && 'lobby__form--ranked']" @submit.prevent="startGame">
+          <p v-if="mode === 'ranked' && claimedName" class="lobby__claimed">
+            Playing as <strong>{{ claimedName }}</strong>
+          </p>
           <input
+            v-else
             v-model="playerNameInput"
             type="text"
-            placeholder="Enter your name"
+            :placeholder="mode === 'ranked' ? 'Choose your ranked name' : 'Enter your name'"
             class="lobby__input"
             required
+            @input="claimError = ''"
           />
+          <p v-if="claimError" class="lobby__error">{{ claimError }}</p>
 
           <SegmentedPicker v-model="modeInput" :options="MODE_OPTIONS" class="segmented--wide" />
 
@@ -231,7 +262,7 @@ function renderMarkdown(md: string): string {
             <span>players at the table</span>
           </label>
 
-          <button type="submit" class="lobby__btn">{{ mode === 'ranked' ? 'Find Match' : 'Start Game' }}</button>
+          <button type="submit" class="lobby__btn" :disabled="claiming">{{ startLabel }}</button>
         </form>
         <button type="button" class="lobby__tutorial-btn" @click="showTutorial = true">How to Play</button>
         <button type="button" class="lobby__tutorial-btn" @click="showRules = true">Game Info</button>

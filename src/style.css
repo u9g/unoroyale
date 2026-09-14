@@ -2128,3 +2128,24 @@ body {
   opacity: 0.75;
   cursor: pointer;
 }
+
+.lobby__claimed {
+  font-size: 1.1rem;
+  color: rgb(255 255 255 / 85%);
+}
+
+.lobby__claimed strong {
+  color: #eab308;
+}
+
+.lobby__error {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #f2a0a0;
+  text-align: center;
+}
+
+.lobby__btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

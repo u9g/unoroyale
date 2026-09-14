@@ -83,7 +83,9 @@ Ranked is a one-on-one ladder. Every match is you against a single opponent, and
 | Royal Vault | 1200 |
 | Sovereign's Table | 1500 |
 
-Casual mode is unranked, leaves your trophies alone, and is where 3- and 4-player tables live.
+Your **ranked name** is chosen once, the first time you play a ranked match, and is bound to your install. Names are unique, so a name another player already holds will be refused while you pick another. There is no rename: it is the name real opponents will see. If the name cannot be registered — no connection, say — the match still starts and the name is claimed the next time you play.
+
+Casual mode is unranked, leaves your trophies alone, uses whatever name you type, and is where 3- and 4-player tables live.
 
 ## Calling ONE
 
