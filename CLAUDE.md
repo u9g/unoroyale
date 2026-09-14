@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This Is
 
-Card Royale (formerly UNO Royale; renamed for App Store Guideline 4.1 compliance — the call-out is "ONE!", card backs show ♛) — a Vue 3 + TypeScript card-shedding game with 1–3 AI opponents, wrapped as an iOS app via Capacitor. Fully offline-capable with bundled assets. Internal identifiers (sayUno, uno-btn, bundle id dev.u9g.unoroyale) intentionally keep the old name.
+Card Royale (formerly UNO Royale; renamed for App Store Guideline 4.1 compliance — the call-out is "ONE!", card backs show ♛) — a Vue 3 + TypeScript card-shedding game with 1–3 AI opponents, wrapped as an iOS and Android app via Capacitor. Fully offline-capable with bundled assets. Internal identifiers (sayUno, uno-btn, bundle id dev.u9g.unoroyale) intentionally keep the old name.
 
 ## Commands
 
@@ -19,7 +19,14 @@ npx vitest watch         # Watch mode
 npm run deploy           # Build + sync + install on connected iPhone
 npm run cap:sync         # Build + sync to iOS Capacitor project
 npm run cap:open         # Open iOS project in Xcode
+npm run build:android    # Build + sync + Play Store bundle (app-release.aab)
+npm run cap:open:android # Open Android project in Android Studio
+sh scripts/logo-png.sh   # Re-render store + Android icons from public/logo.svg
 ```
+
+The Android build needs JDK 21 (AGP 8.13 rejects 25) and SDK platform 36; `build:android`
+pins both. Signing reads `android/keystore.properties`, which is gitignored — copy
+`android/keystore.properties.example` and fill it in before building for upload.
 
 ## Architecture
 
