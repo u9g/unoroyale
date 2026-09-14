@@ -289,6 +289,26 @@ body {
   background: #dc2626;
 }
 
+.feedback-sheet__btn--link {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+}
+
+.feedback-sheet__dismiss {
+  padding: 0.25rem;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.6);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.feedback-sheet__dismiss:hover {
+  color: rgba(255,255,255,0.9);
+}
+
 .feedback-enter-active,
 .feedback-leave-active {
   animation: none;
